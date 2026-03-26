@@ -249,7 +249,5 @@ This specification is licensed under the **MIT License**. See the [LICENSE](LICE
 ---
 
 **Sirraya Labs** · Editor's Draft v1.0.0 · March 2026
-```
 
----
 
