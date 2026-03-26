@@ -1,0 +1,2093 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DID Threat Model Specification (DID-TM) · Sirraya Labs</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;1,9..144,300&family=DM+Mono:wght@400;500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.8.0/dist/mermaid.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+<style>
+:root {
+  --ink:        #0e1621;
+  --ink-light:  #2d3f56;
+  --ink-muted:  #637285;
+  --rule:       #dde4ee;
+  --rule-light: #f2f5fb;
+  --bg:         #f7f9fc;
+  --paper:      #ffffff;
+
+  /* Accent: deep crimson — signals danger, precision, authority */
+  --accent:     #b91c1c;
+  --accent-2:   #7f1d1d;
+  --accent-bg:  #fef2f2;
+  --accent-mid: #dc2626;
+
+  /* Threat-class colours */
+  --tc-s:   #c2410c;  --tc-s-bg: #fff7ed;
+  --tc-t:   #b45309;  --tc-t-bg: #fffbeb;
+  --tc-r:   #7c3aed;  --tc-r-bg: #f5f3ff;
+  --tc-i:   #0369a1;  --tc-i-bg: #f0f9ff;
+  --tc-d:   #0f766e;  --tc-d-bg: #f0fdfa;
+  --tc-e:   #be185d;  --tc-e-bg: #fdf2f8;
+  --tc-k:   #b91c1c;  --tc-k-bg: #fef2f2;
+
+  --warn:     #92400e;  --warn-bg:  #fffbeb;
+  --note-bg:  #eff6ff;  --note:     #1d4ed8;
+  --fixed:    #065f46;  --fixed-bg: #ecfdf5;
+
+  --mono:  'DM Mono', monospace;
+  --serif: 'Fraunces', Georgia, serif;
+  --sans:  'Inter', system-ui, sans-serif;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+
+body {
+  font-family: var(--sans);
+  font-weight: 300;
+  font-size: 16px;
+  line-height: 1.75;
+  color: var(--ink);
+  background: var(--bg);
+}
+
+/* ── Layout ── */
+.page-wrap {
+  display: grid;
+  grid-template-columns: 290px 1fr;
+  min-height: 100vh;
+  background: var(--paper);
+}
+
+/* ── Sidebar ── */
+.sidebar {
+  position: sticky; top:0; height:100vh;
+  overflow-y: auto;
+  background: var(--ink);
+  color: #dde4ee;
+  padding: 0;
+  font-size: 0.82rem;
+  border-right: 1px solid rgba(255,255,255,0.04);
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent) #1e2d40;
+}
+.sidebar::-webkit-scrollbar { width:4px; }
+.sidebar::-webkit-scrollbar-track { background:#1e2d40; }
+.sidebar::-webkit-scrollbar-thumb { background:var(--accent); border-radius:4px; }
+
+.sidebar-brand {
+  padding: 2rem 1.75rem 1.75rem;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  background: linear-gradient(135deg, #0e1621 0%, #1a2535 100%);
+}
+.sidebar-brand .org {
+  font-family: var(--mono); font-size:0.65rem;
+  letter-spacing:0.15em; text-transform:uppercase;
+  color:#64748b; margin-bottom:0.6rem;
+}
+.sidebar-brand .spec-title {
+  font-family: var(--serif); font-size:1.2rem;
+  color:#fff; line-height:1.25; font-weight:300;
+}
+.sidebar-brand .badges {
+  display:flex; gap:0.5rem; margin-top:0.9rem; flex-wrap:wrap;
+}
+.badge-pill {
+  font-family:var(--mono); font-size:0.6rem;
+  letter-spacing:0.05em; padding:0.2em 0.7em;
+  border-radius:20px; font-weight:500;
+}
+.badge-version { background:var(--accent); color:#fff; }
+.badge-draft   { background:#1e3a5f; color:#93c5fd; }
+.badge-norm    { background:#14532d; color:#86efac; }
+
+.toc-part {
+  padding: 1.25rem 1.75rem 0.75rem;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.toc-part-label {
+  font-family:var(--mono); font-size:0.62rem;
+  letter-spacing:0.14em; text-transform:uppercase;
+  color:#475569; margin-bottom:0.6rem;
+  display:flex; align-items:center; gap:0.5rem;
+}
+.toc-part-label::after {
+  content:''; flex:1; height:1px; background:rgba(255,255,255,0.06);
+}
+.toc-list { list-style:none; }
+.toc-list li { line-height:1.4; }
+.toc-list a {
+  display:block; color:#94a3b8; text-decoration:none;
+  padding:0.28rem 0 0.28rem 0.75rem;
+  border-left:2px solid transparent;
+  margin-left:-0.75rem;
+  transition:all 0.15s; font-size:0.79rem;
+}
+.toc-list a:hover, .toc-list a.active {
+  color:#fff; border-left-color:var(--accent);
+  background:linear-gradient(90deg,rgba(185,28,28,0.12) 0%,transparent 100%);
+}
+.toc-list .sub a { padding-left:1.5rem; font-size:0.73rem; color:#64748b; }
+.toc-list .sub a:hover, .toc-list .sub a.active { color:#cbd5e1; }
+
+/* ── Main ── */
+.main {
+  padding: 3.5rem 3.5rem 7rem 3.5rem;
+  max-width: 1160px;
+}
+
+/* ── Spec header ── */
+.spec-header {
+  padding-bottom: 3rem;
+  border-bottom: 2px solid var(--rule);
+  margin-bottom: 3.5rem;
+  position:relative;
+}
+.spec-header::before {
+  content:'';
+  position:absolute; left:-3.5rem; top:-3.5rem; right:-3.5rem;
+  height:6px;
+  background: linear-gradient(90deg, var(--accent) 0%, #7f1d1d 40%, #0e1621 100%);
+}
+.org-eyebrow {
+  font-family:var(--mono); font-size:0.68rem;
+  letter-spacing:0.18em; text-transform:uppercase;
+  color:var(--accent); margin-bottom:1.25rem;
+  display:flex; align-items:center; gap:0.75rem;
+}
+.org-eyebrow::before {
+  content:''; display:inline-block;
+  width:24px; height:2px; background:var(--accent);
+}
+.spec-header h1 {
+  font-family:var(--serif); font-size:3.4rem;
+  line-height:1.05; color:var(--ink);
+  margin-bottom:0.5rem; letter-spacing:-0.02em;
+  font-weight:300;
+}
+.spec-header h1 em {
+  font-style:italic; color:var(--accent);
+}
+.spec-header .tagline {
+  font-size:1.15rem; color:var(--ink-muted);
+  font-weight:300; margin-bottom:2.75rem;
+}
+.meta-grid {
+  display:grid; grid-template-columns:repeat(5,1fr);
+  border:1px solid var(--rule); border-radius:10px;
+  overflow:hidden;
+}
+.meta-cell {
+  padding:1rem 1.25rem;
+  border-right:1px solid var(--rule);
+  background:var(--paper);
+}
+.meta-cell:last-child { border-right:none; }
+.meta-cell .label {
+  font-family:var(--mono); font-size:0.62rem;
+  letter-spacing:0.1em; text-transform:uppercase;
+  color:var(--ink-muted); margin-bottom:0.25rem;
+}
+.meta-cell .value {
+  font-size:0.9rem; font-weight:500; color:var(--ink);
+}
+.meta-cell .value a { color:var(--accent); text-decoration:none; border-bottom:1px dotted var(--accent); }
+
+/* ── Headings ── */
+h2 {
+  font-family:var(--serif); font-size:2.1rem;
+  color:var(--ink); margin:4rem 0 1.5rem;
+  padding-bottom:0.6rem;
+  border-bottom:2px solid var(--rule);
+  letter-spacing:-0.01em; font-weight:300;
+  line-height:1.2;
+}
+h3 {
+  font-family:var(--serif); font-size:1.55rem;
+  color:var(--ink); margin:2.75rem 0 1rem;
+  font-style:italic; font-weight:300;
+}
+h4 {
+  font-size:1rem; font-weight:500;
+  color:var(--ink); margin:2rem 0 0.6rem;
+  letter-spacing:0.01em;
+}
+p { margin-bottom:1.2rem; color:var(--ink-light); font-size:1.02rem; line-height:1.75; }
+ul,ol { margin:0.75rem 0 1.5rem 1.75rem; color:var(--ink-light); font-size:1.02rem; }
+li { margin-bottom:0.4rem; }
+a { color:var(--accent); text-decoration:none; border-bottom:1px dotted var(--accent); }
+a:hover { border-bottom-style:solid; }
+strong { color:var(--ink); font-weight:500; }
+em { font-style:italic; }
+
+/* ── Code ── */
+pre {
+  background:#0d1117; color:#e6edf3;
+  padding:1.75rem; border-radius:10px;
+  overflow-x:auto; font-family:var(--mono);
+  font-size:0.83rem; line-height:1.75;
+  margin:1.5rem 0 2rem;
+  border:1px solid #21262d;
+  box-shadow:0 4px 16px rgba(0,0,0,0.06);
+}
+code {
+  font-family:var(--mono); font-size:0.88em;
+  background:var(--rule-light); color:var(--ink);
+  padding:0.18em 0.45em; border-radius:4px;
+  border:1px solid var(--rule);
+}
+pre code { background:transparent; color:inherit; padding:0; border:none; font-size:inherit; }
+
+/* ── Callouts ── */
+.callout {
+  border-radius:10px; padding:1.25rem 1.75rem;
+  margin:1.75rem 0; font-size:0.95rem;
+}
+.callout-label {
+  font-family:var(--mono); font-size:0.65rem;
+  letter-spacing:0.12em; text-transform:uppercase;
+  font-weight:500; margin-bottom:0.5rem;
+}
+.callout.note    { background:var(--note-bg);  border-left:4px solid var(--note);  }
+.callout.note .callout-label    { color:var(--note); }
+.callout.warning { background:var(--warn-bg);  border-left:4px solid var(--warn);  }
+.callout.warning .callout-label { color:var(--warn); }
+.callout.danger  { background:var(--accent-bg); border-left:4px solid var(--accent); }
+.callout.danger .callout-label  { color:var(--accent); }
+.callout.fixed   { background:var(--fixed-bg); border-left:4px solid var(--fixed); }
+.callout.fixed .callout-label   { color:var(--fixed); }
+.callout p { color:inherit; margin:0; font-size:0.95rem; line-height:1.6; }
+.callout p + p { margin-top:0.5rem; }
+
+/* ── Math blocks ── */
+.math-block {
+  background:var(--rule-light); border:1px solid var(--rule);
+  border-radius:10px; padding:1.5rem 2rem;
+  font-family:var(--mono); font-size:0.88rem;
+  line-height:2; margin:1.5rem 0 2rem;
+  color:var(--ink);
+}
+.math-block .mc { color:var(--ink-muted); font-style:italic; }
+
+/* ── Diagram containers ── */
+.diagram-container {
+  border:1px solid var(--rule); border-radius:14px;
+  padding:2rem; margin:2rem 0;
+  background:#fafbfc;
+}
+.diagram-title {
+  font-family:var(--mono); font-size:0.7rem;
+  letter-spacing:0.1em; text-transform:uppercase;
+  color:var(--ink-muted); margin-bottom:1.5rem;
+  padding-bottom:0.6rem; border-bottom:1px solid var(--rule);
+}
+.mermaid { background:transparent; text-align:center; }
+
+/* ── Tables ── */
+.table-wrap {
+  overflow-x:auto; margin:1.75rem 0 2.5rem;
+  border-radius:10px; border:1px solid var(--rule);
+}
+table { width:100%; border-collapse:collapse; font-size:0.93rem; }
+thead th {
+  background:var(--ink); color:#fff;
+  font-weight:500; font-size:0.75rem;
+  letter-spacing:0.05em; text-transform:uppercase;
+  padding:0.85rem 1.1rem; text-align:left;
+}
+tbody td {
+  padding:0.85rem 1.1rem; border-bottom:1px solid var(--rule-light);
+  color:var(--ink-light); vertical-align:top; background:var(--paper);
+}
+tbody tr:last-child td { border-bottom:none; }
+tbody tr:hover td { background:var(--rule-light); }
+
+/* ── Threat class badges ── */
+.tc { display:inline-block; font-family:var(--mono); font-size:0.68rem;
+      padding:0.2em 0.75em; border-radius:4px; font-weight:500;
+      letter-spacing:0.03em; }
+.tc-s { background:var(--tc-s-bg); color:var(--tc-s); }
+.tc-t { background:var(--tc-t-bg); color:var(--tc-t); }
+.tc-r { background:var(--tc-r-bg); color:var(--tc-r); }
+.tc-i { background:var(--tc-i-bg); color:var(--tc-i); }
+.tc-d { background:var(--tc-d-bg); color:var(--tc-d); }
+.tc-e { background:var(--tc-e-bg); color:var(--tc-e); }
+.tc-k { background:var(--tc-k-bg); color:var(--tc-k); }
+
+/* ── Attack entry cards ── */
+.attack-entry {
+  border:1px solid var(--rule); border-radius:12px;
+  margin:1.75rem 0; overflow:hidden;
+}
+.attack-header {
+  background:var(--rule-light); padding:1rem 1.5rem;
+  display:flex; align-items:center; gap:1rem; flex-wrap:wrap;
+  border-bottom:1px solid var(--rule);
+}
+.attack-id {
+  font-family:var(--mono); font-size:0.72rem;
+  color:var(--ink-muted); min-width:120px;
+}
+.attack-name {
+  font-weight:500; color:var(--ink); font-size:1rem; flex:1;
+}
+.cvss-score {
+  font-family:var(--mono); font-size:0.75rem;
+  padding:0.25em 0.8em; border-radius:20px; font-weight:500;
+}
+.cvss-critical { background:#fef2f2; color:var(--accent); }
+.cvss-high     { background:#fff7ed; color:#c2410c; }
+.cvss-medium   { background:#fffbeb; color:#b45309; }
+.cvss-low      { background:#f0fdf4; color:#166534; }
+.attack-body { padding:1.5rem; }
+.attack-body > *:last-child { margin-bottom:0; }
+.attack-row {
+  display:grid; grid-template-columns:140px 1fr;
+  gap:0.5rem 1rem; margin-bottom:0.75rem;
+  font-size:0.93rem;
+}
+.attack-row .ak { font-family:var(--mono); font-size:0.7rem;
+  letter-spacing:0.08em; text-transform:uppercase;
+  color:var(--ink-muted); padding-top:0.1em; }
+.attack-row .av { color:var(--ink-light); }
+
+/* ── DL terms ── */
+dt { font-weight:500; color:var(--ink); margin-top:1.1rem; font-size:1rem; }
+dd { margin-left:1.75rem; margin-bottom:0.4rem; color:var(--ink-light); }
+
+/* ── Section numbers ── */
+.sec-num { color:var(--accent); font-family:var(--mono); font-size:0.85em; margin-right:0.4rem; }
+
+/* ── Part divider ── */
+.part-divider {
+  display:flex; align-items:center; gap:1.5rem;
+  margin:5rem 0 3rem; padding:2rem 2.5rem;
+  background:var(--ink); border-radius:14px;
+  color:#fff;
+}
+.part-divider .part-num {
+  font-family:var(--mono); font-size:0.65rem;
+  letter-spacing:0.15em; text-transform:uppercase;
+  color:#64748b; white-space:nowrap;
+}
+.part-divider .part-title {
+  font-family:var(--serif); font-size:1.8rem;
+  font-weight:300; font-style:italic; color:#fff;
+}
+.part-divider .part-desc {
+  font-size:0.85rem; color:#64748b; margin-top:0.3rem;
+}
+
+/* ── Param box ── */
+.param-box {
+  background:var(--rule-light); border:1px solid var(--rule);
+  border-radius:10px; padding:1.25rem 1.75rem;
+  font-family:var(--mono); font-size:0.83rem; line-height:2;
+  margin:1.25rem 0 1.75rem;
+}
+.param-box .pr { display:flex; gap:1.25rem; padding:0.1rem 0; }
+.param-box .pk { color:var(--accent); min-width:80px; font-weight:500; }
+.param-box .pv { color:var(--ink); }
+
+/* ── Traceability matrix ── */
+.matrix-wrap { overflow-x:auto; margin:1.75rem 0; }
+.matrix-table { border-collapse:collapse; font-size:0.82rem; min-width:700px; }
+.matrix-table th, .matrix-table td {
+  padding:0.5rem 0.75rem; border:1px solid var(--rule); text-align:center;
+}
+.matrix-table thead th { background:var(--ink); color:#fff; font-weight:500; }
+.matrix-table .row-head { background:var(--rule-light); font-weight:500; color:var(--ink); text-align:left; }
+.matrix-cell-y { background:#dcfce7; color:#166534; font-weight:500; }
+.matrix-cell-p { background:#fffbeb; color:#92400e; font-weight:500; }
+.matrix-cell-n { background:var(--paper); color:#94a3b8; }
+
+/* ── CVSS table ── */
+.cvss-row-c { background:#fff1f2; }
+.cvss-row-h { background:#fff7ed; }
+.cvss-row-m { background:#fffde7; }
+.cvss-row-l { background:#f0fdf4; }
+
+/* ── Footer ── */
+.spec-footer {
+  margin-top:6rem; padding-top:2rem;
+  border-top:2px solid var(--rule);
+  font-size:0.88rem; color:var(--ink-muted);
+  display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;
+}
+.spec-footer a { color:var(--accent); border-bottom:1px dotted var(--accent); }
+
+/* ── Responsive ── */
+@media (max-width:1100px) {
+  .page-wrap { grid-template-columns:1fr; }
+  .sidebar { display:none; }
+  .main { padding:2rem 1.5rem 4rem; max-width:100%; }
+  .meta-grid { grid-template-columns:repeat(2,1fr); }
+  .spec-header h1 { font-size:2.4rem; }
+}
+</style>
+</head>
+<body>
+<div class="page-wrap">
+
+<!-- ════════ SIDEBAR ════════ -->
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <div class="org">Sirraya Labs</div>
+    <div class="spec-title">DID Threat Model<br>Specification</div>
+    <div class="badges">
+      <span class="badge-pill badge-version">v1.0.0</span>
+      <span class="badge-pill badge-draft">Editors Draft</span>
+      <span class="badge-pill badge-norm">Normative</span>
+    </div>
+  </div>
+
+  <div class="toc-part">
+    <div class="toc-part-label">Preamble</div>
+    <ul class="toc-list">
+      <li><a href="#abstract">Abstract</a></li>
+      <li><a href="#sotd">Status of Document</a></li>
+      <li><a href="#introduction">1. Introduction</a></li>
+      <li class="sub"><li><a href="#why-new-taxonomy">1.1 Why a new taxonomy</a></li></li>
+      <li class="sub"><li><a href="#design-goals">1.2 Design goals</a></li></li>
+      <li class="sub"><li><a href="#relationship-to-core">1.3 Relationship to standards</a></li></li>
+      <li><a href="#conformance">2. Conformance</a></li>
+      <li><a href="#terminology">3. Terminology</a></li>
+    </ul>
+  </div>
+
+  <div class="toc-part">
+    <div class="toc-part-label">Part I — Taxonomy</div>
+    <ul class="toc-list">
+      <li><a href="#part1">Part I Overview</a></li>
+      <li><a href="#stride-did">4. STRIDE-DID</a></li>
+      <li class="sub"><li><a href="#tc-s">4.1 S — Spoofing</a></li></li>
+      <li class="sub"><li><a href="#tc-t">4.2 T — Tampering</a></li></li>
+      <li class="sub"><li><a href="#tc-r">4.3 R — Repudiation</a></li></li>
+      <li class="sub"><li><a href="#tc-i">4.4 I — Information Disclosure</a></li></li>
+      <li class="sub"><li><a href="#tc-d">4.5 D — Denial of Service</a></li></li>
+      <li class="sub"><li><a href="#tc-e">4.6 E — Privilege Escalation</a></li></li>
+      <li><a href="#k-class">5. K-Class (Key Lifecycle Failure)</a></li>
+      <li><a href="#linddun-did">6. LINDDUN-DID</a></li>
+      <li><a href="#cvss-did">7. CVSS-DID Scoring</a></li>
+    </ul>
+  </div>
+
+  <div class="toc-part">
+    <div class="toc-part-label">Part II — Attack Surface</div>
+    <ul class="toc-list">
+      <li><a href="#part2">Part II Overview</a></li>
+      <li><a href="#did-stack">8. The DID Stack</a></li>
+      <li><a href="#adversary-model">9. Adversary Model</a></li>
+      <li><a href="#lifecycle-threat-map">10. Lifecycle Threat Map</a></li>
+    </ul>
+  </div>
+
+  <div class="toc-part">
+    <div class="toc-part-label">Part III — Attack Catalog</div>
+    <ul class="toc-list">
+      <li><a href="#part3">Part III Overview</a></li>
+      <li><a href="#registry-attacks">11. Registry Attacks (50x)</a></li>
+      <li><a href="#resolution-attacks">12. Resolution Attacks (100x)</a></li>
+      <li><a href="#wallet-attacks">13. Wallet Attacks (200x)</a></li>
+      <li><a href="#vc-attacks">14. VC/VP Attacks (300x)</a></li>
+      <li><a href="#recovery-attacks">15. Recovery Attacks (400x)</a></li>
+      <li><a href="#crosscutting-attacks">16. Cross-cutting Attacks (500x)</a></li>
+    </ul>
+  </div>
+
+  <div class="toc-part">
+    <div class="toc-part-label">Part IV — Cryptographic</div>
+    <ul class="toc-list">
+      <li><a href="#part4">Part IV Overview</a></li>
+      <li><a href="#algebraic-assumptions">17. Algebraic Assumptions</a></li>
+      <li><a href="#vss-threats">18. VSS-Specific Threats</a></li>
+      <li><a href="#zkp-threats">19. ZKP-Specific Threats</a></li>
+      <li><a href="#vdf-threats">20. VDF-Specific Threats</a></li>
+      <li><a href="#threshold-threats">21. Threshold Sig Threats</a></li>
+      <li><a href="#sidechannel">22. Side-Channel Threats</a></li>
+      <li><a href="#postquantum">23. Post-Quantum Threat Model</a></li>
+    </ul>
+  </div>
+
+  <div class="toc-part">
+    <div class="toc-part-label">Part V — Countermeasures</div>
+    <ul class="toc-list">
+      <li><a href="#part5">Part V Overview</a></li>
+      <li><a href="#security-requirements">24. Security Requirements</a></li>
+      <li><a href="#privacy-requirements">25. Privacy Requirements</a></li>
+      <li><a href="#traceability-matrix">26. Traceability Matrix</a></li>
+    </ul>
+  </div>
+
+  <div class="toc-part">
+    <div class="toc-part-label">Part VI — Compliance</div>
+    <ul class="toc-list">
+      <li><a href="#part6">Part VI Overview</a></li>
+      <li><a href="#framework-alignment">27. Framework Alignment</a></li>
+      <li><a href="#did-method-profiles">28. DID Method Security Profiles</a></li>
+    </ul>
+  </div>
+
+  <div class="toc-part">
+    <div class="toc-part-label">Appendices</div>
+    <ul class="toc-list">
+      <li><a href="#appendix-a">A. Test Assertions</a></li>
+      <li><a href="#appendix-b">B. Threat Register Template</a></li>
+      <li><a href="#appendix-c">C. JSON-LD Context</a></li>
+      <li><a href="#references">D. References</a></li>
+      <li><a href="#acknowledgements">E. Acknowledgements</a></li>
+    </ul>
+  </div>
+</aside>
+
+<!-- ════════ MAIN ════════ -->
+<main class="main">
+
+<!-- ── Header ── -->
+<div class="spec-header">
+  <div class="org-eyebrow">Sirraya Labs · Editors Draft · 2026</div>
+  <h1>DID Threat Model<br>&amp; <em>Security Specification</em></h1>
+  <p class="tagline">A Formal Threat Taxonomy and Security Framework for Decentralized Identifier Systems</p>
+  <div class="meta-grid">
+    <div class="meta-cell">
+      <div class="label">Short Name</div>
+      <div class="value">DID-TM</div>
+    </div>
+    <div class="meta-cell">
+      <div class="label">Editor</div>
+      <div class="value">Amir Hameed Mir</div>
+    </div>
+    <div class="meta-cell">
+      <div class="label">Organization</div>
+      <div class="value">Sirraya Labs</div>
+    </div>
+    <div class="meta-cell">
+      <div class="label">Version</div>
+      <div class="value">1.0.0</div>
+    </div>
+    <div class="meta-cell">
+      <div class="label">Repository</div>
+      <div class="value"><a href="https://github.com/sirraya-labs/did-tm">github.com/sirraya-labs/did-tm</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════ ABSTRACT ════ -->
+<section id="abstract">
+  <h2><span class="sec-num">§</span>Abstract</h2>
+  <p>This specification defines a comprehensive, literature-backed threat model and security framework for systems built on Decentralized Identifiers (DIDs), Verifiable Credentials (VCs), and related Self-Sovereign Identity (SSI) infrastructure. It introduces <strong>STRIDE-DID</strong> — an extension of the classical STRIDE taxonomy purpose-built for decentralized identity — and an eighth threat class, <strong>K (Key Lifecycle Failure)</strong>, which has no equivalent in any existing threat modeling framework and represents the primary novel contribution of this specification.</p>
+  <p>The specification provides: a formal taxonomy of 7 threat classes; a structured attack catalog of over 50 named attacks with unique identifiers, attack trees, CVSS-DID scores, and literature citations; a cryptographic threat analysis covering VSS, ZKP, VDF, and threshold signature schemes; normative security and privacy requirements with threat-to-control traceability; compliance alignment with NIST SP 800-63, ISO 27001, eIDAS 2.0, and SOC 2; and a machine-readable JSON-LD context for embedding threat metadata in DID Documents.</p>
+  <p>The intended audiences are protocol implementers, standards bodies (W3C, IETF, ISO), enterprise security architects, and academic researchers. This specification is designed to become the canonical security reference for the decentralized identity ecosystem.</p>
+</section>
+
+<!-- ════ STATUS ════ -->
+<section id="sotd">
+  <h2><span class="sec-num">§</span>Status of This Document</h2>
+  <p>This is the Editors Draft of the DID Threat Model &amp; Security Specification (DID-TM), prepared by Amir Hameed Mir of Sirraya Labs. This document is a companion to the DID Key Recovery Extension (DID-KR v1.0.0) and extends the W3C Decentralized Identifier specification's §10 (Security Considerations) and §11 (Privacy Considerations) into a standalone, normative framework.</p>
+  <div class="callout warning">
+    <div class="callout-label">Editors Draft</div>
+    <p>This document is a work in progress and has not been formally reviewed. Implementers SHOULD treat all normative requirements as subject to change until a stable release is published. Feedback is welcomed via the GitHub issue tracker.</p>
+  </div>
+</section>
+
+<!-- ════ INTRODUCTION ════ -->
+<section id="introduction">
+  <h2><span class="sec-num">1.</span> Introduction</h2>
+  <p>Decentralized identity systems invert the classical security model. In centralized systems, a trusted third party — an identity provider, a certificate authority, a directory service — anchors trust, bears security obligations, and provides out-of-band recovery paths. Security practitioners can reason about such systems using well-established frameworks: STRIDE models spoofing and tampering against known service boundaries; LINDDUN maps privacy threats against a data controller; PASTA derives attack scenarios from a defined application architecture.</p>
+  <p>Decentralized identifier systems eliminate the trusted third party by design. The DID controller is simultaneously the subject, the authority, and the recovery path. Verifiable Credentials travel directly between issuers and holders without a central directory. Key recovery, if it exists at all, is a cryptographic construction — not an operational procedure. This architectural shift renders classical threat frameworks structurally incomplete.</p>
+  <p>The most visible symptom of this incompleteness is what the authors term the <strong>Key Lifecycle Gap</strong>: no existing framework — not STRIDE, not LINDDUN, not PASTA, not MITRE ATT&amp;CK — contains a threat class for failures arising from the cryptographic key management lifecycle in a system where the key <em>is</em> the identity. Guardian collusion in a secret-sharing scheme, share drift across MPC epoch boundaries, VDF difficulty miscalibration, and post-quantum algorithm migration all represent threats with no natural home in any existing taxonomy. This specification creates that home.</p>
+
+  <h3 id="why-new-taxonomy">1.1 Why a New Taxonomy</h3>
+  <p>The argument for a purpose-built taxonomy rests on three observations:</p>
+  <ol>
+    <li><strong>Trust model mismatch:</strong> STRIDE's threat categories implicitly assume boundaries between trusted and untrusted zones, mediated by a server the defender controls. In DID systems, the resolver is not controlled by the subject. The ledger is not controlled by any party. The guardian is a social relationship, not an administrative role. Threats must be modeled across a fundamentally different trust topology.</li>
+    <li><strong>Cryptographic primitives as first-class attack surfaces:</strong> Classical threat models treat cryptography as a solved sub-problem — "encrypt the channel," "sign the message." DID systems expose cryptographic constructions (VSS polynomials, Schnorr proofs, VDFs, fROST ceremonies) as protocol-level surfaces that can be attacked at the algebraic, implementation, and operational layers simultaneously.</li>
+    <li><strong>Privacy as a structural property:</strong> LINDDUN treats privacy threats as threats against a data controller's handling of personal data. In SSI systems, privacy is a structural property of the protocol — selective disclosure, unlinkability, and holder binding are baked into the cryptographic design. Threats to privacy are therefore threats to cryptographic properties, not to data handling policies.</li>
+  </ol>
+
+  <h3 id="design-goals">1.2 Design Goals</h3>
+  <ul>
+    <li><strong>Completeness:</strong> Every threat relevant to DID/SSI systems MUST be expressible within the taxonomy.</li>
+    <li><strong>Precision:</strong> Each threat class and attack entry MUST be defined precisely enough to be cited in a security audit, a CVE description, or a standards body comment.</li>
+    <li><strong>Traceability:</strong> Every normative security requirement MUST trace to one or more threat entries, and every threat entry MUST have at least one normative mitigation.</li>
+    <li><strong>Interoperability:</strong> Threat metadata MUST be expressible in JSON-LD for embedding in DID Documents and VC proofs.</li>
+    <li><strong>Literature grounding:</strong> Every threat class and cryptographic analysis MUST cite peer-reviewed literature or recognized standards documents.</li>
+  </ul>
+
+  <h3 id="relationship-to-core">1.3 Relationship to Existing Standards</h3>
+  <p>This specification extends and complements the following:</p>
+  <ul>
+    <li><strong>W3C DID Core §10–11:</strong> This specification operationalizes the security and privacy considerations of DID Core into normative, testable requirements.</li>
+    <li><strong>DID-KR (Sirraya Labs):</strong> The DID Key Recovery Extension defines recovery mechanisms; this specification formally characterizes the threats those mechanisms must address and provides the K-class taxonomy they exemplify.</li>
+    <li><strong>W3C VC Data Model §8:</strong> Verifiable Credential security considerations are subsumed by the VC/VP attack catalog in §14.</li>
+    <li><strong>NIST SP 800-63:</strong> Where applicable, requirements are aligned with NIST's digital identity guidelines for authentication assurance levels.</li>
+    <li><strong>ETSI EN 319 401 / eIDAS 2.0:</strong> EU regulatory alignment is addressed in §27.</li>
+  </ul>
+</section>
+
+<!-- ════ CONFORMANCE ════ -->
+<section id="conformance">
+  <h2><span class="sec-num">2.</span> Conformance</h2>
+  <p>All authoring guidelines, diagrams, examples, and notes in this specification are non-normative. Everything else is normative.</p>
+  <p>The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in BCP 14 [RFC2119] [RFC8174] when, and only when, they appear in all capitals.</p>
+  <p>A conforming <strong>DID Method</strong> with respect to this specification is one that documents its security profile using the taxonomy and attack identifiers defined herein, provides normative responses to all applicable threat classes, and publishes that documentation at a stable URL referenced from its DID Method specification.</p>
+  <p>A conforming <strong>DID Wallet</strong> is an implementation that satisfies all MUST-level requirements in §24 applicable to the wallet boundary and passes all test assertions in Appendix A marked as applicable to wallets.</p>
+</section>
+
+<!-- ════ TERMINOLOGY ════ -->
+<section id="terminology">
+  <h2><span class="sec-num">3.</span> Terminology</h2>
+  <dl>
+    <dt>Threat</dt><dd>A potential event or action that could cause harm to a DID system, its controllers, or its participants.</dd>
+    <dt>Attack</dt><dd>A deliberate realization of a threat by an adversary.</dd>
+    <dt>Threat Class</dt><dd>A category of related threats sharing common attack mechanisms, affected assets, and countermeasure families. This specification defines seven threat classes (§4–5).</dd>
+    <dt>Attack Surface</dt><dd>The set of interfaces, protocols, and data stores that an adversary can interact with to mount an attack.</dd>
+    <dt>Adversary</dt><dd>An entity that deliberately attempts to compromise the security or privacy properties of a DID system.</dd>
+    <dt>Trust Boundary</dt><dd>An interface at which control of data or execution transitions from one principal to another, and across which security properties cannot be assumed without verification.</dd>
+    <dt>DID Controller</dt><dd>As defined in DID Core: the entity authorized to make changes to a DID Document.</dd>
+    <dt>Holder</dt><dd>An entity that possesses one or more Verifiable Credentials and can generate Verifiable Presentations.</dd>
+    <dt>Issuer</dt><dd>An entity that creates and signs Verifiable Credentials.</dd>
+    <dt>Verifier</dt><dd>An entity that receives and verifies Verifiable Presentations.</dd>
+    <dt>Guardian</dt><dd>An entity holding a cryptographic share as part of a social recovery scheme.</dd>
+    <dt>Key Ceremony</dt><dd>A formal, witnessed procedure for generating, distributing, or destroying cryptographic key material.</dd>
+    <dt>Share Drift</dt><dd>A state in which the secret shares held by distributed participants become inconsistent across epoch boundaries, potentially preventing successful threshold reconstruction.</dd>
+    <dt>CVSS-DID</dt><dd>An extension of the Common Vulnerability Scoring System (CVSS 3.1) with additional metrics specific to decentralized identity systems, defined in §7.</dd>
+    <dt>Attack Tree</dt><dd>A formal model representing the ways an attacker can reach an attack goal, using AND/OR logical composition of sub-goals (Schneier 1999).</dd>
+    <dt>Post-Quantum Security</dt><dd>Security against adversaries with access to a cryptographically relevant quantum computer capable of running Shor's or Grover's algorithms at scale.</dd>
+  </dl>
+</section>
+
+<!-- ════════════════════════════════ PART I ════════════════════════════════ -->
+<div class="part-divider" id="part1">
+  <div>
+    <div class="part-num">Part I</div>
+    <div class="part-title">Threat Taxonomy</div>
+    <div class="part-desc">STRIDE-DID · K-Class · LINDDUN-DID · CVSS-DID Scoring</div>
+  </div>
+</div>
+
+<!-- ════ §4 STRIDE-DID ════ -->
+<section id="stride-did">
+  <h2><span class="sec-num">4.</span> STRIDE-DID Threat Classes</h2>
+  <p>STRIDE (Spoofing, Tampering, Repudiation, Information Disclosure, Denial of Service, Elevation of Privilege) is a threat elicitation framework introduced by Loren Kohnfelder and Praerit Garg at Microsoft in 1999 and formalized in [STRIDE-ORIGINAL]. This specification re-specifies each STRIDE class for the decentralized identity context, replacing implicit assumptions about centralized control with explicit definitions applicable to DID/SSI architectures.</p>
+  <p>The relationship between original STRIDE and STRIDE-DID is analogous to the relationship between generic network security models and post-perimeter security models: the original categories remain relevant but their definitions, threat agents, and countermeasures must be re-derived from a different threat model.</p>
+
+  <div class="callout note">
+    <div class="callout-label">Notation</div>
+    <p>Each threat class is assigned a single-letter identifier: S, T, R, I, D, E, K. Every attack in Part III carries a primary class assignment and optionally up to two secondary class assignments. An attack assigned <span class="tc tc-s">S</span> as primary and <span class="tc tc-i">I</span> as secondary is primarily a spoofing attack that also discloses information.</p>
+  </div>
+
+  <!-- S -->
+  <section id="tc-s">
+    <h3>4.1 <span class="tc tc-s">S</span> — Spoofing</h3>
+    <p><strong>Classical definition:</strong> An entity pretends to be another entity.</p>
+    <p><strong>DID-specific definition:</strong> An adversary asserts control of a DID or presents credentials as if issued to or by a DID they do not control. In decentralized systems, identity assertions are backed by cryptographic proof; spoofing therefore requires either compromising private key material, forging proofs, or exploiting weaknesses in the verification chain from DID Document to key to signature.</p>
+    <p><strong>Affected assets:</strong> DID private keys, DID Documents, VC issuer keys, presentation proofs, resolver responses.</p>
+    <p><strong>Primary attack mechanisms:</strong></p>
+    <ul>
+      <li><strong>Key compromise:</strong> Direct theft or derivation of a DID controller's private key material.</li>
+      <li><strong>DID Document substitution:</strong> Replacing the legitimate DID Document with one containing attacker-controlled verification methods, typically via registry-level attacks.</li>
+      <li><strong>Resolver cache poisoning:</strong> Causing a resolver to return a tampered DID Document without the resolver or client detecting the manipulation.</li>
+      <li><strong>Guardian identity fraud:</strong> An adversary impersonates a legitimate guardian to inject malicious share contributions into a social recovery ceremony.</li>
+      <li><strong>Credential subject spoofing:</strong> Presenting a credential issued to a different subject by exploiting holder binding weaknesses or absent binding proofs.</li>
+    </ul>
+    <p><strong>Distinguishing characteristic in SSI:</strong> Because DID resolution is a network operation, the verification chain must be verified end-to-end. A resolver that returns a valid DID Document does not prove that the document has not been tampered with unless the DID method provides cryptographic anchoring (e.g., via a blockchain ledger). Non-ledger methods (did:web, did:key) have significantly expanded spoofing surfaces.</p>
+    <p><strong>Literature:</strong> Fett et al. [FETT-DID-2019] demonstrate resolver-based impersonation attacks. Mühle et al. [MUHLE-2018] analyze credential subject spoofing in SSI architectures.</p>
+  </section>
+
+  <!-- T -->
+  <section id="tc-t">
+    <h3>4.2 <span class="tc tc-t">T</span> — Tampering</h3>
+    <p><strong>Classical definition:</strong> Unauthorized modification of data.</p>
+    <p><strong>DID-specific definition:</strong> Unauthorized modification of a DID Document, Verifiable Credential, Verifiable Presentation, or any component of the cryptographic infrastructure that supports DID resolution and verification. Tampering attacks in decentralized systems are particularly consequential because the modified data may be cached, replicated, or relied upon by verifiers without the subject's knowledge.</p>
+    <p><strong>Affected assets:</strong> DID Documents, VC payloads, proof objects, DID method registries, smart contract state.</p>
+    <p><strong>Primary attack mechanisms:</strong></p>
+    <ul>
+      <li><strong>DID Document injection:</strong> Adding unauthorized verification methods or service endpoints to a DID Document, either by compromising the controller's signing key or exploiting write permissions in the DID method registry.</li>
+      <li><strong>Verifiable Credential forgery:</strong> Modifying VC claims or proof metadata such that a verifier accepts a modified credential.</li>
+      <li><strong>Smart contract state manipulation:</strong> For ledger-based DID methods, exploiting reentrancy, integer overflow, or access control vulnerabilities in the DID registry smart contract to write unauthorized state.</li>
+      <li><strong>Commitment manipulation in VSS:</strong> A dishonest dealer publishes VSS commitments that are inconsistent with the distributed shares, causing share verification to pass while reconstruction fails or recovers the wrong secret.</li>
+      <li><strong>Proof modification in transit:</strong> An active network adversary modifies a VC proof or presentation token before it reaches the verifier.</li>
+    </ul>
+    <p><strong>Literature:</strong> Atzei et al. [ATZEI-2017] catalog smart contract vulnerabilities applicable to DID registries. Camenisch &amp; Lysyanskaya [CAMENISCH-2001] formalize credential forgery in their CL signature scheme analysis.</p>
+  </section>
+
+  <!-- R -->
+  <section id="tc-r">
+    <h3>4.3 <span class="tc tc-r">R</span> — Repudiation</h3>
+    <p><strong>Classical definition:</strong> An entity denies having performed an action.</p>
+    <p><strong>DID-specific definition:</strong> An adversary — or a legitimate principal acting in bad faith — denies having authorized a DID operation, issued a credential, or participated in an identity-bearing transaction. In decentralized systems, repudiation is complicated by the absence of centrally maintained audit logs, the availability of key rotation as a plausible-deniability mechanism, and the potential for legitimate key compromise claims to mask intentional repudiation.</p>
+    <p><strong>Primary attack mechanisms:</strong></p>
+    <ul>
+      <li><strong>Key rotation as deniability:</strong> A controller rotates their DID signing key and claims all previous operations were performed by an attacker who compromised the old key, denying responsibility for legitimate prior actions.</li>
+      <li><strong>Distributed log manipulation:</strong> In systems relying on distributed ledgers for audit trails, an adversary with sufficient stake or hash power manipulates the record of DID operations.</li>
+      <li><strong>Selective presentation:</strong> A holder selectively presents credentials to verifiers, denying having made certain claims to parties they do not wish to acknowledge having transacted with.</li>
+      <li><strong>Multi-sig deniability:</strong> In threshold signature schemes, any signing participant can claim their partial signature was produced under coercion or key compromise, making accountability for the aggregate signature ambiguous.</li>
+    </ul>
+  </section>
+
+  <!-- I -->
+  <section id="tc-i">
+    <h3>4.4 <span class="tc tc-i">I</span> — Information Disclosure</h3>
+    <p><strong>Classical definition:</strong> Exposure of information to unauthorized parties.</p>
+    <p><strong>DID-specific definition:</strong> The unintended exposure of identity-related information — including the association between DIDs and real-world identities, social graph structure, behavioral patterns, or credential contents — to adversaries who should not have access to that information. Information disclosure in SSI systems is particularly insidious because it can arise from the protocol structure itself (correlation via DID reuse) rather than from a breach of access controls.</p>
+    <p><strong>Primary attack mechanisms:</strong></p>
+    <ul>
+      <li><strong>DID correlation:</strong> An adversary observes a subject using the same DID across multiple interactions and correlates those interactions to build a behavioral profile, even in the absence of any explicit personal data in the DID Document.</li>
+      <li><strong>Social graph leakage:</strong> Publishing guardian identifiers, delegation chains, or service endpoints in a DID Document reveals relationship graphs that can be used to infer sensitive associations.</li>
+      <li><strong>Credential content inference:</strong> An adversary infers the contents of a selectively disclosed credential from the disclosed subset, the credential schema, or statistical knowledge of the issuer's credential population.</li>
+      <li><strong>Metadata timing analysis:</strong> Correlating the timing of DID resolution requests with transaction events to identify when subjects are active and with whom.</li>
+      <li><strong>ZKP linkability in repeated presentations:</strong> A ZKP that reuses the same nonce, deterministic randomness, or proof component across multiple presentations allows a verifier or passive observer to link those presentations to the same holder.</li>
+    </ul>
+    <p><strong>Literature:</strong> Pöhls et al. [POHLS-2020] analyze metadata leakage in self-sovereign identity systems. Chaum's foundational work on unlinkability [CHAUM-1985] underpins the privacy requirements in §25.</p>
+  </section>
+
+  <!-- D -->
+  <section id="tc-d">
+    <h3>4.5 <span class="tc tc-d">D</span> — Denial of Service</h3>
+    <p><strong>Classical definition:</strong> Making a service unavailable to legitimate users.</p>
+    <p><strong>DID-specific definition:</strong> Disrupting the availability of identity services — resolution, verification, issuance, or recovery — in ways that prevent legitimate principals from exercising control of their identities. DoS threats in DID systems extend beyond network-layer flooding to include protocol-layer availability attacks unique to decentralized architectures: a DID can be made effectively unusable without any network disruption if its associated cryptographic state is corrupted or if required participants in a threshold scheme become unavailable.</p>
+    <p><strong>Primary attack mechanisms:</strong></p>
+    <ul>
+      <li><strong>Resolver flooding:</strong> Saturating DID resolver infrastructure with resolution requests, degrading availability for legitimate users.</li>
+      <li><strong>DID method deregistration:</strong> For methods relying on centralized or semi-centralized registries, forcing deregistration of a DID through administrative or legal means.</li>
+      <li><strong>Guardian unavailability:</strong> In social recovery schemes, preventing a threshold of guardians from responding to recovery requests, effectively making the DID unrecoverable without an alternative mechanism.</li>
+      <li><strong>VDF computation interference:</strong> Disrupting the computation environment for time-locked recovery, either by interfering with hardware or by providing false timing proofs.</li>
+      <li><strong>Ledger griefing:</strong> Flooding a DID method's underlying ledger with low-fee transactions, causing DID write operations to be delayed or dropped due to fee market dynamics.</li>
+      <li><strong>Revocation registry poisoning:</strong> Flooding a credential status list or revocation registry with invalid entries, degrading verifier performance or causing false revocation positives.</li>
+    </ul>
+  </section>
+
+  <!-- E -->
+  <section id="tc-e">
+    <h3>4.6 <span class="tc tc-e">E</span> — Privilege Escalation</h3>
+    <p><strong>Classical definition:</strong> Gaining capabilities beyond what is authorized.</p>
+    <p><strong>DID-specific definition:</strong> An adversary gains the ability to perform DID operations — key rotation, service endpoint modification, credential issuance delegation — for a DID they do not legitimately control, or gains access to secrets that should require multi-party cooperation to reconstruct. Privilege escalation in DID systems is particularly critical because full key compromise is equivalent to complete identity takeover, with no administrative override available.</p>
+    <p><strong>Primary attack mechanisms:</strong></p>
+    <ul>
+      <li><strong>Guardian collusion:</strong> A threshold of guardians in a social recovery scheme collude to reconstruct the controller's secret without the controller's knowledge or consent, gaining full control of the DID.</li>
+      <li><strong>MPC provider compromise:</strong> An adversary compromises a threshold of MPC nodes in a Type C (MPC-Mediated) recovery scheme, enabling unauthorized threshold signatures.</li>
+      <li><strong>Threshold bypass via share pollution:</strong> An adversary who knows fewer than <em>t</em> shares injects maliciously crafted shares into a reconstruction ceremony, causing the reconstructed secret to be a value the adversary controls rather than the original secret.</li>
+      <li><strong>Delegation chain exploitation:</strong> A DID controller grants a delegation credential to a sub-controller; the sub-controller exploits ambiguities in the delegation scope to perform operations beyond what was intended.</li>
+      <li><strong>Verification method confusion:</strong> A verifier uses a key listed in the DID Document under one verification relationship (e.g., <code>keyAgreement</code>) to verify a signature that should only be valid under a different relationship (e.g., <code>authentication</code>).</li>
+    </ul>
+  </section>
+</section>
+
+<!-- ════ §5 K-CLASS ════ -->
+<section id="k-class">
+  <h2><span class="sec-num">5.</span> <span class="tc tc-k">K</span> — Key Lifecycle Failure (Novel Class)</h2>
+
+  <div class="callout danger">
+    <div class="callout-label">Primary Contribution</div>
+    <p>The K threat class is the primary novel contribution of this specification. It has no equivalent in STRIDE, LINDDUN, PASTA, TRIKE, or MITRE ATT&amp;CK. The formalization of this class is the reason this taxonomy is necessary.</p>
+  </div>
+
+  <p><strong>Definition:</strong> A K-class threat arises when the cryptographic key management lifecycle — including key generation, distribution, custody, rotation, recovery, and post-quantum migration — fails in a way that causes permanent loss of identity control, unauthorized transfer of identity control, or structural degradation of the cryptographic guarantees that back the identity system. K-class failures are distinct from all other threat classes because they are often irreversible: unlike a data breach (I-class), a compromised DID from a K-class failure cannot be remediated by changing a password or invalidating a session. The key <em>is</em> the identity.</p>
+
+  <h4>5.1 Why K Cannot Be Subsumed by Existing Classes</h4>
+  <p>A naive analysis might assign key management failures to existing STRIDE classes: key theft to S (Spoofing), share manipulation to T (Tampering), key unavailability to D (DoS). This analysis is insufficient for three reasons:</p>
+  <ol>
+    <li><strong>Lifecycle coherence:</strong> K-class failures span the entire key lifecycle as a unified phenomenon. A share drift failure (§18, attack DID-TM-ATK-401) begins with an operational failure (missed epoch refresh), manifests as a cryptographic inconsistency, and results in either DoS (reconstruction fails) or privilege escalation (wrong secret reconstructed). No single existing class captures this lifecycle arc.</li>
+    <li><strong>Cryptographic construction as attack surface:</strong> K-class threats attack the <em>design</em> of the cryptographic construction, not just its implementation. A VDF calibrated to a reference platform that has been superseded by ASIC hardware is not a DoS attack or a tampering attack — it is a failure of the key lifecycle specification that makes the time-lock property invalid.</li>
+    <li><strong>Non-custodial irreversibility:</strong> In non-custodial systems, there is no authority with the power to override a key management failure. The irreversibility of K-class failures in fully decentralized systems requires a distinct threat class with its own countermeasure family.</li>
+  </ol>
+
+  <h4>5.2 K-Class Sub-categories</h4>
+  <dl>
+    <dt>K1 — Key Ceremony Failure</dt>
+    <dd>Failure of the formal procedure by which key material is generated, backed up, or distributed, resulting in insecure key generation, unwitnessed key ceremonies, or improper key escrow.</dd>
+    <dt>K2 — Share Lifecycle Failure</dt>
+    <dd>Failure in the distribution, custody, refreshment, or reconstruction of secret shares in threshold schemes. Includes share drift (§18, DID-TM-ATK-401), share loss, and proactive refresh desynchronization.</dd>
+    <dt>K3 — Time-Lock Integrity Failure</dt>
+    <dd>Failure of a VDF or time-lock construction to enforce the intended temporal property. Includes difficulty miscalibration, ASIC advantage exploitation, and false proof acceptance.</dd>
+    <dt>K4 — Rotation and Revocation Failure</dt>
+    <dd>Failure of key rotation or revocation to take effect correctly, leaving revoked keys accepted or creating windows of dual validity.</dd>
+    <dt>K5 — Post-Quantum Migration Failure</dt>
+    <dd>Failure to migrate cryptographic constructions to quantum-resistant algorithms before a cryptographically relevant quantum computer becomes available, resulting in retroactive compromise of archived identity records.</dd>
+    <dt>K6 — Inheritance and Recovery Chain Failure</dt>
+    <dd>Failure of the designated succession path for a DID — including dead-man's switch failures, beneficiary key loss, and inheritance chain breaks — resulting in permanent loss of identity control after the controller's incapacity.</dd>
+  </dl>
+
+  <div class="callout note">
+    <div class="callout-label">Literature Grounding</div>
+    <p>The K-class concept is informed by Bonneau et al.'s analysis of password replacement [BONNEAU-2012] (which identifies lifecycle properties as distinct from cryptographic strength), Herzberg et al.'s original proactive secret sharing work [HERZBERG-1995] (which shows that share lifetime is a security parameter distinct from threshold), and Boneh et al.'s VDF formalization [BONEH-2018] (which treats computation time as a cryptographically enforceable property that can be violated by hardware advances).</p>
+  </div>
+</section>
+
+<!-- ════ §6 LINDDUN-DID ════ -->
+<section id="linddun-did">
+  <h2><span class="sec-num">6.</span> LINDDUN-DID Privacy Threat Mapping</h2>
+  <p>LINDDUN (Linkability, Identifiability, Non-repudiation, Detectability, Disclosure of information, Unawareness, Non-compliance) is a privacy threat elicitation framework developed by Deng et al. [DENG-2011]. This section maps LINDDUN categories to DID/SSI-specific privacy threats and identifies where DID architecture creates novel privacy threat surfaces not covered by the original framework.</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>LINDDUN Class</th>
+          <th>DID-Specific Manifestation</th>
+          <th>Novel SSI Surface</th>
+          <th>STRIDE-DID Cross-reference</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Linkability</strong></td>
+          <td>DID reuse across verifiers; correlated credential presentations; resolver query linkability</td>
+          <td>Pairwise DID rotation insufficient if resolver queries are logged; ZKP nonce reuse links presentations</td>
+          <td><span class="tc tc-i">I</span></td>
+        </tr>
+        <tr>
+          <td><strong>Identifiability</strong></td>
+          <td>Quasi-identifier exposure through partial VC disclosure; DID Document metadata enabling re-identification</td>
+          <td>Selective disclosure without proof of non-disclosure; k-anonymity failures in small issuer populations</td>
+          <td><span class="tc tc-i">I</span></td>
+        </tr>
+        <tr>
+          <td><strong>Non-repudiation</strong></td>
+          <td>Irrevocable credential signatures enabling retroactive audit; persistent DID operation ledger entries</td>
+          <td>Blockchain immutability as privacy threat: DID operations cannot be deleted after publication</td>
+          <td><span class="tc tc-r">R</span></td>
+        </tr>
+        <tr>
+          <td><strong>Detectability</strong></td>
+          <td>DID resolution frequency revealing activity patterns; presence of recovery methods revealing security posture</td>
+          <td>Recovery method type in DID Document reveals guardian count and type — a high-value metadata target</td>
+          <td><span class="tc tc-i">I</span></td>
+        </tr>
+        <tr>
+          <td><strong>Disclosure</strong></td>
+          <td>Credential content inference from disclosed attributes; proof metadata revealing undisclosed claims</td>
+          <td>BBS+ signature reveal-all-or-nothing failures; range proof boundaries inferring sensitive values</td>
+          <td><span class="tc tc-i">I</span></td>
+        </tr>
+        <tr>
+          <td><strong>Unawareness</strong></td>
+          <td>Holder unaware of verifier's retention policy; issuer unaware of downstream VC propagation</td>
+          <td>Verifier ecosystems accumulating VC presentation logs without holder consent or awareness</td>
+          <td><span class="tc tc-i">I</span>, <span class="tc tc-t">T</span></td>
+        </tr>
+        <tr>
+          <td><strong>Non-compliance</strong></td>
+          <td>DID Document containing personal data subject to GDPR right-to-erasure — technically irreconcilable with blockchain immutability</td>
+          <td>Legal obligation to delete vs. cryptographic immutability: a structural tension unique to decentralized identity on public ledgers</td>
+          <td><span class="tc tc-k">K</span> (K4)</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ════ §7 CVSS-DID ════ -->
+<section id="cvss-did">
+  <h2><span class="sec-num">7.</span> CVSS-DID Scoring Methodology</h2>
+  <p>The Common Vulnerability Scoring System v3.1 [CVSS-31] provides a standardized method for assessing vulnerability severity. This specification extends CVSS 3.1 with four additional metrics specific to decentralized identity systems. CVSS-DID scores are used throughout the attack catalog in Part III.</p>
+
+  <h4>7.1 CVSS-DID Extension Metrics</h4>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Metric</th><th>Abbreviation</th><th>Values</th><th>Rationale</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Decentralization Factor</strong></td>
+          <td><code>DF</code></td>
+          <td>High (H) / Medium (M) / Low (L)</td>
+          <td>Higher decentralization reduces the blast radius of any single node compromise but may increase attack persistence. H = no central authority; L = federated with trust anchors.</td>
+        </tr>
+        <tr>
+          <td><strong>Recovery Availability</strong></td>
+          <td><code>RA</code></td>
+          <td>Available (A) / Degraded (D) / None (N)</td>
+          <td>Whether a valid recovery path exists for the compromised DID. N = permanent identity loss risk.</td>
+        </tr>
+        <tr>
+          <td><strong>Threshold Collusion Required</strong></td>
+          <td><code>TC</code></td>
+          <td>None (N) / Partial (P) / Full (F)</td>
+          <td>Whether the attack requires compromise of a threshold of distributed participants. F = full threshold needed; N = single-party attack.</td>
+        </tr>
+        <tr>
+          <td><strong>Quantum Advantage</strong></td>
+          <td><code>QA</code></td>
+          <td>Applicable (A) / Not Applicable (N)</td>
+          <td>Whether a sufficiently powerful quantum computer would change the exploitability of this vulnerability from theoretical to practical.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h4>7.2 Severity Classification</h4>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Severity</th><th>CVSS-DID Base Score</th><th>Description</th><th>Example</th></tr></thead>
+      <tbody>
+        <tr class="cvss-row-c"><td><strong>Critical</strong></td><td>9.0–10.0</td><td>Permanent identity loss or complete impersonation without recovery path</td><td>Guardian collusion at threshold; full MPC provider compromise</td></tr>
+        <tr class="cvss-row-h"><td><strong>High</strong></td><td>7.0–8.9</td><td>Unauthorized DID operations or credential forgery with significant impact</td><td>DID Document injection; resolver cache poisoning</td></tr>
+        <tr class="cvss-row-m"><td><strong>Medium</strong></td><td>4.0–6.9</td><td>Partial information disclosure or degraded availability</td><td>Social graph leakage; resolver flooding</td></tr>
+        <tr class="cvss-row-l"><td><strong>Low</strong></td><td>0.1–3.9</td><td>Limited impact, difficult to exploit, or easily mitigated</td><td>Timing side-channel on key derivation; DID method metadata exposure</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ════════════════════════════════ PART II ════════════════════════════════ -->
+<div class="part-divider" id="part2">
+  <div>
+    <div class="part-num">Part II</div>
+    <div class="part-title">Attack Surface Model</div>
+    <div class="part-desc">The DID Stack · Adversary Model · Lifecycle Threat Map</div>
+  </div>
+</div>
+
+<!-- ════ §8 DID STACK ════ -->
+<section id="did-stack">
+  <h2><span class="sec-num">8.</span> The DID Stack</h2>
+  <p>This specification models the DID ecosystem as a four-layer stack. Each layer has a distinct attack surface, set of trust assumptions, and applicable countermeasure family. Attacks typically exploit weaknesses at a single layer but may propagate across layer boundaries.</p>
+
+  <div class="diagram-container">
+    <div class="diagram-title">Figure 1 — The DID Four-Layer Attack Surface Model</div>
+    <div class="mermaid">
+graph TB
+    subgraph L4["Layer 4 — Application"]
+        A1[Wallet UI] --- A2[Agent / Edge]
+        A2 --- A3[Native App]
+    end
+    subgraph L3["Layer 3 — Protocol"]
+        B1[VC/VP Exchange] --- B2[DIDComm]
+        B2 --- B3[OpenID4VC]
+    end
+    subgraph L2["Layer 2 — Resolution"]
+        C1[Universal Resolver] --- C2[DID Method Driver]
+        C2 --- C3[Cache / CDN]
+    end
+    subgraph L1["Layer 1 — Registry / Method"]
+        D1[Blockchain / Ledger] --- D2[DNS / Web Host]
+        D2 --- D3[IPFS / DHT]
+    end
+
+    L4 -->|"trust boundary: VC proof verification"| L3
+    L3 -->|"trust boundary: DID resolution"| L2
+    L2 -->|"trust boundary: method-specific read"| L1
+
+    style L1 fill:#fff1f2,stroke:#fca5a5,color:#7f1d1d
+    style L2 fill:#fff7ed,stroke:#fdba74,color:#7c2d12
+    style L3 fill:#eff6ff,stroke:#93c5fd,color:#1e3a5f
+    style L4 fill:#f0fdf4,stroke:#86efac,color:#14532d
+    </div>
+  </div>
+
+  <h4>8.1 Layer 1 — Registry and Method Layer</h4>
+  <p>The registry layer encompasses the substrate on which DID Documents are anchored. This includes public blockchain ledgers (Ethereum, Bitcoin, Hyperledger Indy), web servers (for did:web), distributed hash tables (for IPFS-backed methods), and DNS infrastructure. The security properties of this layer are entirely determined by the DID method and are largely outside the control of the DID subject.</p>
+  <p><strong>Primary threats:</strong> Smart contract vulnerabilities (T-class), ledger consensus manipulation (T-class), DNS hijacking for did:web (S-class), IPFS content addressing collisions (T-class).</p>
+
+  <h4>8.2 Layer 2 — Resolution and Transport Layer</h4>
+  <p>The resolution layer encompasses DID resolvers — universal or method-specific — that transform DID strings into DID Documents. Resolvers are trust boundaries: a resolver that returns a manipulated DID Document invalidates all security properties that depend on the resolved document, regardless of the strength of the underlying registry.</p>
+  <p><strong>Primary threats:</strong> Resolver cache poisoning (S-class), DNS-over-HTTPS MITM (T-class), resolution result tampering (T-class), resolver DoS (D-class).</p>
+
+  <h4>8.3 Layer 3 — Protocol Layer</h4>
+  <p>The protocol layer encompasses the exchange protocols that use DIDs and Verifiable Credentials: DIDComm messaging, OpenID for Verifiable Credentials (OID4VC), the Verifiable Presentation Request protocol, and credential status protocols. This layer's primary threats concern the integrity and privacy of credential exchanges.</p>
+  <p><strong>Primary threats:</strong> Credential forgery (T-class), holder binding bypass (S-class, E-class), presentation replay (S-class), credential correlation (I-class).</p>
+
+  <h4>8.4 Layer 4 — Application and Wallet Layer</h4>
+  <p>The wallet layer is the most heterogeneous and, in practice, the highest-risk layer. Wallets hold private key material, manage credential stores, and execute user-facing operations. Hardware security module (HSM) integration and secure enclave usage vary widely across implementations.</p>
+  <p><strong>Primary threats:</strong> Private key extraction (K-class, E-class), seed phrase compromise (K-class), wallet malware (K-class, S-class), biometric bypass (S-class, E-class).</p>
+</section>
+
+<!-- ════ §9 ADVERSARY MODEL ════ -->
+<section id="adversary-model">
+  <h2><span class="sec-num">9.</span> Adversary Model</h2>
+  <p>This specification defines four adversary tiers based on capability and resources. Each attack entry in Part III is annotated with the minimum adversary tier required to execute the attack.</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Tier</th><th>Name</th><th>Capabilities</th><th>Examples</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>T0</strong></td>
+          <td>Script Kiddie</td>
+          <td>Uses publicly available tools and exploits; no original research capability; network-level adversary only</td>
+          <td>Phishing for seed phrases; replaying captured VPs; public resolver abuse</td>
+        </tr>
+        <tr>
+          <td><strong>T1</strong></td>
+          <td>Skilled Attacker</td>
+          <td>Can develop novel exploits against published protocols; understands cryptographic constructions at a practitioner level; can compromise individual MPC nodes or guardians</td>
+          <td>Smart contract exploitation; resolver cache poisoning; side-channel on wallet implementations</td>
+        </tr>
+        <tr>
+          <td><strong>T2</strong></td>
+          <td>Nation-State / Well-Funded</td>
+          <td>Can perform cryptanalytic attacks on weakened algorithms; can compromise threshold fractions of distributed systems; sustained access to target infrastructure</td>
+          <td>Coordinated guardian compromise; ledger consensus manipulation; large-scale correlation via resolver log access</td>
+        </tr>
+        <tr>
+          <td><strong>T3</strong></td>
+          <td>Quantum-Capable</td>
+          <td>Possesses a cryptographically relevant quantum computer; can break RSA-2048, ECDSA/Ed25519, and Diffie-Hellman in polynomial time using Shor's algorithm</td>
+          <td>Retroactive compromise of archived DID key material; breaking Ed25519 holder binding; DH key exchange decryption</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h4>9.1 Adversary Goals</h4>
+  <p>Adversaries attacking DID systems pursue goals that differ meaningfully from classical adversaries. The primary goals, in approximate order of prevalence:</p>
+  <ol>
+    <li><strong>Identity takeover</strong> — gaining full control of a target's DID, enabling impersonation and credential issuance</li>
+    <li><strong>Credential forgery</strong> — creating false credentials without controlling the issuer's DID</li>
+    <li><strong>Correlation and surveillance</strong> — building behavioral profiles of subjects across verifiers without their knowledge</li>
+    <li><strong>Identity denial</strong> — preventing a legitimate subject from using or recovering their DID</li>
+    <li><strong>Recovery subversion</strong> — gaining the ability to trigger or manipulate recovery mechanisms at a time of the adversary's choosing</li>
+  </ol>
+</section>
+
+<!-- ════ §10 LIFECYCLE THREAT MAP ════ -->
+<section id="lifecycle-threat-map">
+  <h2><span class="sec-num">10.</span> Identity Lifecycle Threat Map</h2>
+  <p>Every DID passes through a common lifecycle. This section maps the primary threat classes applicable at each lifecycle stage.</p>
+
+  <div class="diagram-container">
+    <div class="diagram-title">Figure 2 — Identity Lifecycle Threat Map</div>
+    <div class="mermaid">
+flowchart LR
+    CREATE["🔑 Creation\n&amp; Registration"] -->|"S,T,K1"| ISSUE
+    ISSUE["📄 Issuance\n&amp; Delegation"] -->|"T,R,I"| PRESENT
+    PRESENT["✅ Presentation\n&amp; Authentication"] -->|"S,I,E"| ROTATE
+    ROTATE["🔄 Key Rotation\n&amp; Management"] -->|"K4,T"| RECOVER
+    RECOVER["🛡️ Recovery"] -->|"K2,K3,E"| REVOKE
+    REVOKE["❌ Revocation\n&amp; Deactivation"] -->|"K4,K6,D"| END["🔚 End of Life"]
+
+    style CREATE fill:#f0fdf4,stroke:#4ade80,color:#14532d
+    style ISSUE fill:#eff6ff,stroke:#60a5fa,color:#1e3a5f
+    style PRESENT fill:#fafafa,stroke:#a3a3a3,color:#404040
+    style ROTATE fill:#fffbeb,stroke:#fbbf24,color:#78350f
+    style RECOVER fill:#fff1f2,stroke:#fb7185,color:#9f1239
+    style REVOKE fill:#f5f3ff,stroke:#a78bfa,color:#4c1d95
+    style END fill:#fafafa,stroke:#d4d4d4,color:#737373
+    </div>
+  </div>
+
+  <p>The threat classes annotated on each transition arrow indicate which classes are most active during the transition. For example, the transition from Creation to Issuance carries <span class="tc tc-s">S</span> (key ceremony impersonation), <span class="tc tc-t">T</span> (DID Document tampering during registration), and <span class="tc tc-k">K</span> sub-class K1 (key ceremony failure).</p>
+</section>
+
+<!-- ════════════════════════════════ PART III ════════════════════════════════ -->
+<div class="part-divider" id="part3">
+  <div>
+    <div class="part-num">Part III</div>
+    <div class="part-title">Attack Catalog</div>
+    <div class="part-desc">50+ named attacks · CVSS-DID scores · attack trees · literature citations · CVEs</div>
+  </div>
+</div>
+
+<section>
+  <p>The attack catalog assigns each attack a permanent identifier of the form <code>DID-TM-ATK-NNN</code>. Identifiers are stable across versions of this specification; attacks are never renumbered. Deprecated attacks are marked as such but retain their identifier.</p>
+  <p>Each entry contains: identifier, name, primary and secondary threat class(es), CVSS-DID score and severity, affected DID stack layer, minimum adversary tier, attack description, attack tree (abbreviated), normative mitigation references, and literature citations where applicable.</p>
+</section>
+
+<!-- ── §11 REGISTRY ATTACKS ── -->
+<section id="registry-attacks">
+  <h2><span class="sec-num">11.</span> Registry and Method Layer Attacks (50x)</h2>
+
+  <div class="attack-entry">
+    <div class="attack-header">
+      <span class="attack-id">DID-TM-ATK-050</span>
+      <span class="attack-name">Smart Contract Registry Reentrancy</span>
+      <span class="tc tc-t">T — Tampering</span>
+      <span class="cvss-score cvss-critical">CVSS-DID 9.1 Critical</span>
+    </div>
+    <div class="attack-body">
+      <div class="attack-row"><span class="ak">Layer</span><span class="av">Layer 1 — Registry</span></div>
+      <div class="attack-row"><span class="ak">Adversary</span><span class="av">T1 — Skilled Attacker</span></div>
+      <div class="attack-row"><span class="ak">CVSS-DID</span><span class="av">AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H · DF:H · RA:N · TC:N · QA:N</span></div>
+      <div class="attack-row"><span class="ak">Description</span><span class="av">An adversary exploits a reentrancy vulnerability in a DID registry smart contract to write unauthorized DID Document state. By constructing a malicious calling contract that re-enters the registry during an unresolved state transition, the adversary can overwrite verification methods, add unauthorized service endpoints, or transfer controller authority.</span></div>
+      <div class="attack-row"><span class="ak">Attack Tree</span><span class="av">Goal: Write unauthorized DID Document state. AND: [Identify reentrancy-vulnerable contract function] AND [Craft re-entrant calldata] AND [Execute before state commit]. OR: Exploit flash loan to front-run state validation.</span></div>
+      <div class="attack-row"><span class="ak">Mitigations</span><span class="av">§24.1 REQ-50: DID registry contracts MUST implement the Checks-Effects-Interactions pattern. §24.1 REQ-51: Registry contracts MUST use ReentrancyGuard or equivalent mutex. Formal verification of state transition functions SHOULD be performed.</span></div>
+      <div class="attack-row"><span class="ak">Literature</span><span class="av">[ATZEI-2017] Atzei, Bartoletti, Cimoli — "A Survey of Attacks on Ethereum Smart Contracts." ICPSS 2017. Real-world precedent: The DAO hack (2016), CVE-2018-10299.</span></div>
+    </div>
+  </div>
+
+  <div class="attack-entry">
+    <div class="attack-header">
+      <span class="attack-id">DID-TM-ATK-051</span>
+      <span class="attack-name">did:web DNS Hijacking</span>
+      <span class="tc tc-s">S — Spoofing</span>
+      <span class="tc tc-t">T</span>
+      <span class="cvss-score cvss-high">CVSS-DID 8.6 High</span>
+    </div>
+    <div class="attack-body">
+      <div class="attack-row"><span class="ak">Layer</span><span class="av">Layer 1 — Registry (DNS)</span></div>
+      <div class="attack-row"><span class="ak">Adversary</span><span class="av">T1 — Skilled Attacker</span></div>
+      <div class="attack-row"><span class="ak">Description</span><span class="av">The did:web method resolves DID Documents from HTTPS endpoints at a well-known URL path. An adversary who gains control of the domain's DNS records — via registrar account compromise, BGP hijacking, or DNS cache poisoning — can serve a modified DID Document containing attacker-controlled verification methods. Because the trust root for did:web is DNS, all cryptographic verification downstream is invalidated.</span></div>
+      <div class="attack-row"><span class="ak">Attack Tree</span><span class="av">Goal: Serve malicious DID Document for target domain. OR: [Compromise DNS registrar account] OR [BGP route hijack for domain's IP range] OR [DNS cache poisoning at resolver] OR [Compromise web host TLS certificate via ACME].</span></div>
+      <div class="attack-row"><span class="ak">Mitigations</span><span class="av">§24.2 REQ-52: did:web implementations MUST pin TLS certificates using HPKP or CT log monitoring. REQ-53: DID Documents served over did:web SHOULD include a self-signed proof using the controller's key, enabling detection of unauthorized modification even after DNS compromise. DNSSEC MUST be enabled for did:web domains.</span></div>
+      <div class="attack-row"><span class="ak">Literature</span><span class="av">[BASIN-DNS-2018] Basin, Cremers, Meier — "DNSSEC: Security and Availability Challenges." TLS-specific: [BIRGE-LEE-2018] Birge-Lee et al., "Bamboozling Certificate Authorities."</span></div>
+    </div>
+  </div>
+
+  <div class="attack-entry">
+    <div class="attack-header">
+      <span class="attack-id">DID-TM-ATK-052</span>
+      <span class="attack-name">Ledger Consensus Eclipse Attack</span>
+      <span class="tc tc-t">T — Tampering</span>
+      <span class="tc tc-d">D</span>
+      <span class="cvss-score cvss-high">CVSS-DID 8.2 High</span>
+    </div>
+    <div class="attack-body">
+      <div class="attack-row"><span class="ak">Layer</span><span class="av">Layer 1 — Registry (Ledger)</span></div>
+      <div class="attack-row"><span class="ak">Adversary</span><span class="av">T2 — Well-Funded</span></div>
+      <div class="attack-row"><span class="ak">Description</span><span class="av">An adversary eclipses a DID resolver's view of a blockchain by monopolizing its peer connections, causing the resolver to operate on a stale or adversary-controlled fork. DID operations that appear confirmed to the eclipsed resolver may be rolled back when the eclipse is lifted, or the adversary may present a fabricated ledger state.</span></div>
+      <div class="attack-row"><span class="ak">Mitigations</span><span class="av">REQ-54: Resolvers MUST connect to multiple independent ledger nodes from distinct operators. REQ-55: Resolvers MUST implement fork detection using checkpoint anchors. Light client proofs (e.g., SPV for Bitcoin-based methods) MUST be verified.</span></div>
+      <div class="attack-row"><span class="ak">Literature</span><span class="av">[HEILMAN-2015] Heilman et al., "Eclipse Attacks on Bitcoin's Peer-to-Peer Network." USENIX Security 2015.</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ── §12 RESOLUTION ATTACKS ── -->
+<section id="resolution-attacks">
+  <h2><span class="sec-num">12.</span> Resolution and Transport Layer Attacks (100x)</h2>
+
+  <div class="attack-entry">
+    <div class="attack-header">
+      <span class="attack-id">DID-TM-ATK-100</span>
+      <span class="attack-name">Universal Resolver Cache Poisoning</span>
+      <span class="tc tc-s">S — Spoofing</span>
+      <span class="tc tc-t">T</span>
+      <span class="cvss-score cvss-critical">CVSS-DID 9.3 Critical</span>
+    </div>
+    <div class="attack-body">
+      <div class="attack-row"><span class="ak">Layer</span><span class="av">Layer 2 — Resolution</span></div>
+      <div class="attack-row"><span class="ak">Adversary</span><span class="av">T1 — Skilled Attacker</span></div>
+      <div class="attack-row"><span class="ak">Description</span><span class="av">Universal Resolver instances cache DID Document responses to reduce resolution latency. An adversary who can inject malicious DID Documents into the resolver cache — via a compromised DID method driver, a MITM attack on the driver-to-registry connection, or a race condition in cache invalidation — causes all subsequent resolution requests to return the poisoned document.</span></div>
+      <div class="attack-row"><span class="ak">Attack Tree</span><span class="av">Goal: Serve adversary-controlled DID Document via Universal Resolver. OR: [Compromise DID method driver process] OR [MITM driver-to-registry channel] OR [Cache timing race: inject between fetch and store] OR [Exploit cache key collision].</span></div>
+      <div class="attack-row"><span class="ak">Mitigations</span><span class="av">REQ-100: Universal Resolver instances MUST verify that cached DID Documents are cryptographically anchored to the underlying registry (e.g., Merkle proof). REQ-101: Cache TTLs MUST NOT exceed the DID method's minimum update propagation time. REQ-102: Cache entries MUST be signed by the method driver and verified by the resolver core.</span></div>
+      <div class="attack-row"><span class="ak">Literature</span><span class="av">[FETT-DID-2019] Fett, Küsters, Schmitz — "An Extensive Formal Security Analysis of the OpenID Financial-grade API." Extended application to DID resolution in [SCHANZENBACH-2020].</span></div>
+    </div>
+  </div>
+
+  <div class="attack-entry">
+    <div class="attack-header">
+      <span class="attack-id">DID-TM-ATK-101</span>
+      <span class="attack-name">DID Resolution SSRF</span>
+      <span class="tc tc-e">E — Privilege Escalation</span>
+      <span class="tc tc-i">I</span>
+      <span class="cvss-score cvss-high">CVSS-DID 7.9 High</span>
+    </div>
+    <div class="attack-body">
+      <div class="attack-row"><span class="ak">Layer</span><span class="av">Layer 2 — Resolution</span></div>
+      <div class="attack-row"><span class="ak">Adversary</span><span class="av">T0 — Script Kiddie</span></div>
+      <div class="attack-row"><span class="ak">Description</span><span class="av">A DID resolver that fetches external resources during resolution (e.g., for did:web or linked data proofs) is vulnerable to Server-Side Request Forgery if user-controlled DID strings or DID Document URLs are not validated. An adversary crafts a malicious DID Document containing service endpoint URLs pointing to internal resolver infrastructure or cloud metadata services (169.254.169.254).</span></div>
+      <div class="attack-row"><span class="ak">Mitigations</span><span class="av">REQ-103: Resolvers MUST validate all URLs in DID Documents against an allowlist of permitted schemes and MUST block requests to RFC 1918 address ranges and cloud metadata IP ranges. REQ-104: DID Document fetching MUST execute in a sandboxed network context.</span></div>
+    </div>
+  </div>
+
+  <div class="attack-entry">
+    <div class="attack-header">
+      <span class="attack-id">DID-TM-ATK-102</span>
+      <span class="attack-name">Resolver Amplification DoS</span>
+      <span class="tc tc-d">D — Denial of Service</span>
+      <span class="cvss-score cvss-medium">CVSS-DID 6.5 Medium</span>
+    </div>
+    <div class="attack-body">
+      <div class="attack-row"><span class="ak">Layer</span><span class="av">Layer 2 — Resolution</span></div>
+      <div class="attack-row"><span class="ak">Adversary</span><span class="av">T0 — Script Kiddie</span></div>
+      <div class="attack-row"><span class="ak">Description</span><span class="av">An adversary crafts DIDs that trigger expensive resolution operations — large DID Documents, chained DID references, complex JSON-LD context processing — and floods a resolver with requests for these DIDs, consuming disproportionate CPU and memory resources relative to the request cost.</span></div>
+      <div class="attack-row"><span class="ak">Mitigations</span><span class="av">REQ-105: Resolvers MUST enforce a maximum DID Document size (RECOMMENDED: 64 KB). REQ-106: JSON-LD context processing MUST be subject to a CPU-time limit per resolution request. REQ-107: Resolvers MUST implement rate limiting per source IP and per DID method.</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ── §13 WALLET ATTACKS ── -->
+<section id="wallet-attacks">
+  <h2><span class="sec-num">13.</span> Wallet and Key Material Attacks (200x)</h2>
+
+  <div class="attack-entry">
+    <div class="attack-header">
+      <span class="attack-id">DID-TM-ATK-200</span>
+      <span class="attack-name">Cold Boot Seed Phrase Extraction</span>
+      <span class="tc tc-k">K — Key Lifecycle</span>
+      <span class="tc tc-e">E</span>
+      <span class="cvss-score cvss-critical">CVSS-DID 9.6 Critical</span>
+    </div>
+    <div class="attack-body">
+      <div class="attack-row"><span class="ak">Layer</span><span class="av">Layer 4 — Wallet</span></div>
+      <div class="attack-row"><span class="ak">Adversary</span><span class="av">T1 — Skilled Attacker (physical access required)</span></div>
+      <div class="attack-row"><span class="ak">Description</span><span class="av">An adversary with physical access to a device running a software DID wallet performs a cold boot attack to extract DRAM contents containing the decrypted seed phrase or derived private key material. Software wallets that decrypt key material into heap memory without using hardware enclaves are vulnerable even when the device is encrypted at rest.</span></div>
+      <div class="attack-row"><span class="ak">Attack Tree</span><span class="av">Goal: Extract seed phrase from wallet memory. AND: [Gain physical device access] AND OR: [Force device sleep while wallet active, boot external OS, dump DRAM] OR [Extract from swap/hibernation file] OR [Exploit OS memory disclosure vulnerability].</span></div>
+      <div class="attack-row"><span class="ak">Mitigations</span><span class="av">REQ-200: Wallets MUST use OS-provided secure key storage (iOS Secure Enclave, Android Keystore, Windows DPAPI + TPM) for all private key material. REQ-201: Seed phrases MUST NOT be held in decrypted form in heap memory for longer than the minimum time required to complete derivation. REQ-202: Wallets SHOULD implement memory hardening (mlock, memset_s before free).</span></div>
+      <div class="attack-row"><span class="ak">Literature</span><span class="av">[HALDERMAN-2008] Halderman et al., "Lest We Remember: Cold Boot Attacks on Encryption Keys." USENIX Security 2008. Formative paper establishing the attack class.</span></div>
+    </div>
+  </div>
+
+  <div class="attack-entry">
+    <div class="attack-header">
+      <span class="attack-id">DID-TM-ATK-201</span>
+      <span class="attack-name">Wallet Malware Keylogging</span>
+      <span class="tc tc-k">K — Key Lifecycle</span>
+      <span class="cvss-score cvss-critical">CVSS-DID 9.0 Critical</span>
+    </div>
+    <div class="attack-body">
+      <div class="attack-row"><span class="ak">Layer</span><span class="av">Layer 4 — Wallet</span></div>
+      <div class="attack-row"><span class="ak">Adversary</span><span class="av">T0 — Script Kiddie (once malware deployed)</span></div>
+      <div class="attack-row"><span class="ak">Description</span><span class="av">Malware installed on a device intercepts seed phrase entry or clipboard operations during wallet setup or recovery, exfiltrating key material before it is stored. This attack requires only standard malware capability — no cryptographic sophistication — making it the most prevalent wallet compromise vector in practice.</span></div>
+      <div class="attack-row"><span class="ak">Mitigations</span><span class="av">REQ-203: Wallets MUST display seed phrases in a secure UI surface that prevents clipboard access and screenshot capture. REQ-204: Wallet applications MUST use platform-enforced UI isolation (FLAG_SECURE on Android, UIScreen.isCaptured check on iOS). Hardware wallets are RECOMMENDED for high-assurance use cases.</span></div>
+    </div>
+  </div>
+
+  <div class="attack-entry">
+    <div class="attack-header">
+      <span class="attack-id">DID-TM-ATK-202</span>
+      <span class="attack-name">Biometric Bypass via Spoofed Artifact</span>
+      <span class="tc tc-s">S — Spoofing</span>
+      <span class="tc tc-e">E</span>
+      <span class="cvss-score cvss-high">CVSS-DID 7.5 High</span>
+    </div>
+    <div class="attack-body">
+      <div class="attack-row"><span class="ak">Layer</span><span class="av">Layer 4 — Wallet</span></div>
+      <div class="attack-row"><span class="ak">Adversary</span><span class="av">T1 — Skilled Attacker</span></div>
+      <div class="attack-row"><span class="ak">Description</span><span class="av">Many mobile wallets gate DID key usage behind biometric authentication. An adversary who obtains a high-resolution image of the target's fingerprint or face can construct a spoof artifact (gelatin fingerprint, 3D face mask) that passes presentation attack detection (PAD) checks on consumer-grade biometric sensors, unlocking the wallet without the owner's knowledge.</span></div>
+      <div class="attack-row"><span class="ak">Mitigations</span><span class="av">REQ-205: Wallets MUST use platform biometric APIs that enforce hardware-backed attestation (Android BiometricPrompt with Strong class; Apple Secure Enclave FaceID/TouchID). REQ-206: Wallets SHOULD supplement biometric authentication with a secondary factor for high-value operations (key rotation, recovery initiation).</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ── §14 VC ATTACKS ── -->
+<section id="vc-attacks">
+  <h2><span class="sec-num">14.</span> Verifiable Credential and Presentation Attacks (300x)</h2>
+
+  <div class="attack-entry">
+    <div class="attack-header">
+      <span class="attack-id">DID-TM-ATK-300</span>
+      <span class="attack-name">Credential Replay Attack</span>
+      <span class="tc tc-s">S — Spoofing</span>
+      <span class="cvss-score cvss-high">CVSS-DID 8.0 High</span>
+    </div>
+    <div class="attack-body">
+      <div class="attack-row"><span class="ak">Layer</span><span class="av">Layer 3 — Protocol</span></div>
+      <div class="attack-row"><span class="ak">Adversary</span><span class="av">T0 — Script Kiddie</span></div>
+      <div class="attack-row"><span class="ak">Description</span><span class="av">An adversary captures a valid Verifiable Presentation and replays it to a verifier, impersonating the original holder. This attack is effective when presentations lack domain binding (a verifier-specific challenge/nonce) or when verifiers do not check presentation freshness. In systems using long-lived VP tokens for API access, replay attacks can persist for the token's entire validity period.</span></div>
+      <div class="attack-row"><span class="ak">Attack Tree</span><span class="av">Goal: Authenticate to verifier as the legitimate holder. AND: [Capture a valid VP, e.g. by passive network eavesdrop or data breach] AND [Present to verifier before expiry]. Amplified by: verifier caches presentation tokens without replay detection.</span></div>
+      <div class="attack-row"><span class="ak">Mitigations</span><span class="av">REQ-300: Verifiable Presentations MUST include a verifier-provided nonce bound to the presentation proof. REQ-301: Presentations MUST include an <code>expirationDate</code> of no more than 5 minutes for interactive authentication. REQ-302: Verifiers MUST maintain a seen-nonce cache for the nonce validity window.</span></div>
+      <div class="attack-row"><span class="ak">Literature</span><span class="av">[SPORNY-VC-2022] W3C VC Data Model §7.3 "Verifiable Presentations." [FROMKNECHT-2014] on replay in credential systems.</span></div>
+    </div>
+  </div>
+
+  <div class="attack-entry">
+    <div class="attack-header">
+      <span class="attack-id">DID-TM-ATK-301</span>
+      <span class="attack-name">Holder Binding Absence Exploit</span>
+      <span class="tc tc-s">S — Spoofing</span>
+      <span class="tc tc-e">E</span>
+      <span class="cvss-score cvss-high">CVSS-DID 8.4 High</span>
+    </div>
+    <div class="attack-body">
+      <div class="attack-row"><span class="ak">Layer</span><span class="av">Layer 3 — Protocol</span></div>
+      <div class="attack-row"><span class="ak">Adversary</span><span class="av">T0 — Script Kiddie</span></div>
+      <div class="attack-row"><span class="ak">Description</span><span class="av">A Verifiable Credential that does not cryptographically bind the credential to the holder's DID key can be presented by any party who possesses a copy of the credential. If credentials are issued to subject DIDs without a corresponding <code>credentialSubject.id</code> field or without requiring a holder-signed presentation proof, a party who obtains a copy of the credential through a data breach or social engineering can present it as if they were the legitimate holder.</span></div>
+      <div class="attack-row"><span class="ak">Mitigations</span><span class="av">REQ-303: Credentials MUST include a <code>credentialSubject.id</code> corresponding to a DID controlled by the holder. REQ-304: Verifiers MUST verify that the presentation proof is signed by the key associated with the <code>credentialSubject.id</code>. REQ-305: Issuers SHOULD use link secrets (as in Hyperledger AnonCreds) for credentials issued to pseudonymous holders.</span></div>
+    </div>
+  </div>
+
+  <div class="attack-entry">
+    <div class="attack-header">
+      <span class="attack-id">DID-TM-ATK-302</span>
+      <span class="attack-name">ZKP Nonce Reuse Linkability</span>
+      <span class="tc tc-i">I — Information Disclosure</span>
+      <span class="cvss-score cvss-medium">CVSS-DID 5.9 Medium</span>
+    </div>
+    <div class="attack-body">
+      <div class="attack-row"><span class="ak">Layer</span><span class="av">Layer 3 — Protocol</span></div>
+      <div class="attack-row"><span class="ak">Adversary</span><span class="av">T1 — Skilled Attacker</span></div>
+      <div class="attack-row"><span class="ak">Description</span><span class="av">Zero-knowledge presentation proofs that reuse deterministic randomness — due to faulty PRNG seeding, incorrect library usage, or wallet state corruption — allow a verifier or passive observer to link multiple presentations to the same holder. Even if the presentations disclose different attributes, the shared nonce component identifies them as originating from the same credential or holder wallet.</span></div>
+      <div class="attack-row"><span class="ak">Mitigations</span><span class="av">REQ-306: All ZKP presentation proofs MUST use fresh, cryptographically secure randomness for each proof generation. REQ-307: Wallet implementations MUST NOT cache or reuse proof components. REQ-308: ZKP libraries used in wallets MUST be tested for nonce reuse resistance under PRNG failure conditions.</span></div>
+      <div class="attack-row"><span class="ak">Literature</span><span class="av">[BERNSTEIN-NONCE-2012] Bernstein — "Failures in nonce-based authenticated encryption." Applied to ZKP context in [CAMENISCH-2016].</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ── §15 RECOVERY ATTACKS ── -->
+<section id="recovery-attacks">
+  <h2><span class="sec-num">15.</span> Recovery-Specific Attacks (400x)</h2>
+  <p>Recovery attacks are a sub-family of K-class threats that specifically target the mechanisms defined in DID-KR. This catalog entry series maps directly to the recovery types defined in [DID-KR].</p>
+
+  <div class="attack-entry">
+    <div class="attack-header">
+      <span class="attack-id">DID-TM-ATK-400</span>
+      <span class="attack-name">Guardian Collusion at Threshold</span>
+      <span class="tc tc-e">E — Privilege Escalation</span>
+      <span class="tc tc-k">K</span>
+      <span class="cvss-score cvss-critical">CVSS-DID 9.8 Critical</span>
+    </div>
+    <div class="attack-body">
+      <div class="attack-row"><span class="ak">Layer</span><span class="av">Layer 4 — Wallet (Social Recovery)</span></div>
+      <div class="attack-row"><span class="ak">Adversary</span><span class="av">T1 — requires compromise of t guardians</span></div>
+      <div class="attack-row"><span class="ak">CVSS-DID</span><span class="av">AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:H/A:H · DF:H · RA:N · TC:F · QA:N</span></div>
+      <div class="attack-row"><span class="ak">Description</span><span class="av">A colluding group of at least <em>t</em> (threshold) guardians in a Feldman VSS social recovery scheme collaborates to reconstruct the subject's secret without the subject's consent. Despite the ZKP proofs proving share knowledge without revealing shares, the reconstruction step still produces the secret — making collusion at the reconstruction aggregator the critical attack surface. Recovery <span class="tc tc-k">K2</span> sub-class.</span></div>
+      <div class="attack-row"><span class="ak">Attack Tree</span><span class="av">Goal: Reconstruct controller's secret. AND: [Control t guardians, by social engineering, bribery, or legal compulsion] AND [Perform Lagrange interpolation over shares in Z_q]. Amplified by: guardians in same jurisdictional or organizational trust domain.</span></div>
+      <div class="attack-row"><span class="ak">Mitigations</span><span class="av">REQ-400: Guardian sets MUST be distributed across independent jurisdictions, organizations, and social relationships. REQ-401: Threshold <em>t</em> SHOULD be at least 3-of-5 or greater for high-assurance DIDs. REQ-402: Recovery ceremonies MUST require the subject's online verification (proof of life) before reconstruction is initiated. REQ-403: Reconstruction SHOULD occur on a device controlled by the subject, not at an aggregator.</span></div>
+      <div class="attack-row"><span class="ak">Literature</span><span class="av">[SHAMIR-1979] Shamir, "How to Share a Secret." CACM 1979. Collusion analysis in [DESMEDT-1992] Desmedt &amp; Frankel, "Threshold Cryptosystems." [BONNEAU-2012] for social recovery threat model.</span></div>
+    </div>
+  </div>
+
+  <div class="attack-entry">
+    <div class="attack-header">
+      <span class="attack-id">DID-TM-ATK-401</span>
+      <span class="attack-name">MPC Epoch Share Drift</span>
+      <span class="tc tc-k">K — Key Lifecycle (K2)</span>
+      <span class="tc tc-d">D</span>
+      <span class="cvss-score cvss-high">CVSS-DID 7.8 High</span>
+    </div>
+    <div class="attack-body">
+      <div class="attack-row"><span class="ak">Layer</span><span class="av">Layer 4 — Wallet (MPC)</span></div>
+      <div class="attack-row"><span class="ak">Adversary</span><span class="av">T1 — requires ability to delay provider refresh operations</span></div>
+      <div class="attack-row"><span class="ak">Description</span><span class="av">In a Type C MPC-mediated recovery scheme with proactive share refreshment (defined in DID-KR §7.1.4), providers are expected to update shares at regular epoch intervals. If a subset of providers miss a refresh — due to network partitioning, operational failure, or adversarial interference — their shares become inconsistent with the current epoch. A reconstruction attempt using a mix of old- and new-epoch shares will either fail (DoS) or produce an incorrect secret (K-class). This attack is the primary operational risk in deployed MPC systems.</span></div>
+      <div class="attack-row"><span class="ak">Attack Tree</span><span class="av">Goal: Prevent successful MPC reconstruction. OR: [Cause provider to miss epoch refresh by network partition] OR [Corrupt provider's refresh transcript verification] OR [Delay catch-up protocol beyond recovery timeout window].</span></div>
+      <div class="attack-row"><span class="ak">Mitigations</span><span class="av">REQ-404: MPC implementations MUST implement the epoch catch-up protocol defined in DID-KR §5.4.3. REQ-405: Providers MUST refuse to participate in reconstruction ceremonies if their epoch is more than <code>maxEpochSkew</code> behind the majority. REQ-406: Refresh transcripts MUST be cryptographically verifiable (as specified in DID-KR §5.4.3). REQ-407: Recovery coordinators MUST detect epoch skew before initiating signing ceremonies.</span></div>
+      <div class="attack-row"><span class="ak">Literature</span><span class="av">[HERZBERG-1995] Herzberg et al., "Proactive Secret Sharing, Or: How to Cope With Perpetual Leakage." CRYPTO 1995. Operational analysis in [GENNARO-1996] Gennaro et al., "Robust Threshold DSS Signatures."</span></div>
+    </div>
+  </div>
+
+  <div class="attack-entry">
+    <div class="attack-header">
+      <span class="attack-id">DID-TM-ATK-402</span>
+      <span class="attack-name">VDF Difficulty Miscalibration</span>
+      <span class="tc tc-k">K — Key Lifecycle (K3)</span>
+      <span class="cvss-score cvss-high">CVSS-DID 8.1 High</span>
+    </div>
+    <div class="attack-body">
+      <div class="attack-row"><span class="ak">Layer</span><span class="av">Layer 4 — Wallet (Type B Recovery)</span></div>
+      <div class="attack-row"><span class="ak">Adversary</span><span class="av">T1–T2 depending on hardware advantage</span></div>
+      <div class="attack-row"><span class="ak">Description</span><span class="av">Time-locked inheritance using VDFs (DID-KR Type B) calibrates computational difficulty to a reference platform and expected wall-clock delay. If the adversary has access to hardware significantly faster than the reference platform — ASICs optimized for modular squaring, or GPU-parallelized Wesolowski VDFs (where applicable) — the intended 30-day time lock may be computable in hours or days, allowing premature inheritance claim.</span></div>
+      <div class="attack-row"><span class="ak">Mitigations</span><span class="av">REQ-408: VDF difficulty parameters MUST be calibrated with a <code>tolerance</code> factor of at least 0.3 (30% margin). REQ-409: VDF parameters MUST be periodically revised as reference platform performance improvements are published. REQ-410: Implementations SHOULD use VDF constructions with inherent ASIC-resistance or provide ASIC-resistance guidance in the parameter calibration documentation. REQ-411: Wesolowski VDF proof verification MUST be performed by an independent verifier, not self-reported by the beneficiary.</span></div>
+      <div class="attack-row"><span class="ak">Literature</span><span class="av">[BONEH-2018] Boneh, Bonneau, Bünz, Fisch — "Verifiable Delay Functions." CRYPTO 2018. ASIC threat analysis in [LIOR-VDF-2020] Lior, Yaish &amp; Keidar, "WeRLman: To Tackle Whale (Transactions)."</span></div>
+    </div>
+  </div>
+
+  <div class="attack-entry">
+    <div class="attack-header">
+      <span class="attack-id">DID-TM-ATK-403</span>
+      <span class="attack-name">VSS Share Pollution</span>
+      <span class="tc tc-e">E — Privilege Escalation</span>
+      <span class="tc tc-t">T</span>
+      <span class="cvss-score cvss-critical">CVSS-DID 9.5 Critical</span>
+    </div>
+    <div class="attack-body">
+      <div class="attack-row"><span class="ak">Layer</span><span class="av">Layer 4 — Wallet (Social Recovery)</span></div>
+      <div class="attack-row"><span class="ak">Adversary</span><span class="av">T1 — controls fewer than t shares but can inject into reconstruction</span></div>
+      <div class="attack-row"><span class="ak">Description</span><span class="av">An adversary who has compromised fewer than <em>t</em> legitimate shares attempts to complete reconstruction by contributing maliciously crafted fake shares for the missing positions. If the reconstruction aggregator does not verify each submitted share against the published Feldman commitments before performing Lagrange interpolation, the adversary can cause reconstruction to output an adversary-chosen value rather than the genuine secret.</span></div>
+      <div class="attack-row"><span class="ak">Mitigations</span><span class="av">REQ-412: Every submitted share MUST be verified against the Feldman commitments before inclusion in Lagrange interpolation. Specifically: <code>g^s_i ≡ ∏ C_j^(i^j mod q) (mod p)</code> MUST hold for each submitted <code>(i, s_i)</code>. REQ-413: Reconstruction MUST fail and abort if any share verification fails. REQ-414: ZKP proofs (Schnorr proofs as defined in DID-KR §7.2) MUST be verified for each guardian submission.</span></div>
+      <div class="attack-row"><span class="ak">Literature</span><span class="av">[FELDMAN-1987] Feldman, "A Practical Scheme for Non-interactive Verifiable Secret Sharing." FOCS 1987. Attack analysis in [PEDERSEN-1992] Pedersen, "Non-Interactive and Information-Theoretic Secure Verifiable Secret Sharing."</span></div>
+    </div>
+  </div>
+
+  <div class="attack-entry">
+    <div class="attack-header">
+      <span class="attack-id">DID-TM-ATK-404</span>
+      <span class="attack-name">Recovery Loop Deadlock</span>
+      <span class="tc tc-d">D — Denial of Service</span>
+      <span class="tc tc-k">K (K6)</span>
+      <span class="cvss-score cvss-high">CVSS-DID 7.2 High</span>
+    </div>
+    <div class="attack-body">
+      <div class="attack-row"><span class="ak">Layer</span><span class="av">Layer 3 — Protocol (Recovery Graph)</span></div>
+      <div class="attack-row"><span class="ak">Adversary</span><span class="av">T0 — may be self-inflicted by misconfiguration</span></div>
+      <div class="attack-row"><span class="ak">Description</span><span class="av">A circular dependency in the recovery method graph causes recovery to deadlock. For example: DID A's recovery depends on DID B's controller, and DID B's recovery depends on DID A's controller. When both keys are lost simultaneously, neither can be recovered because each requires the other to be already recovered. As defined in DID-KR §8.4, implementations must perform acyclicity checks — failure to do so creates this vulnerability.</span></div>
+      <div class="attack-row"><span class="ak">Mitigations</span><span class="av">REQ-415: DID implementations MUST validate that the recovery method dependency graph is acyclic at publication time (DFS-based check as specified in DID-KR §8.4). REQ-416: Periodic health checks MUST re-validate acyclicity as recovery methods are updated. REQ-417: Resolvers MAY reject DID Documents containing cyclic recovery dependencies.</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ── §16 CROSS-CUTTING ── -->
+<section id="crosscutting-attacks">
+  <h2><span class="sec-num">16.</span> Cross-Cutting Attacks (500x)</h2>
+
+  <div class="attack-entry">
+    <div class="attack-header">
+      <span class="attack-id">DID-TM-ATK-500</span>
+      <span class="attack-name">Sybil Attack on Guardian Network</span>
+      <span class="tc tc-e">E — Privilege Escalation</span>
+      <span class="tc tc-s">S</span>
+      <span class="cvss-score cvss-high">CVSS-DID 8.7 High</span>
+    </div>
+    <div class="attack-body">
+      <div class="attack-row"><span class="ak">Layer</span><span class="av">All layers</span></div>
+      <div class="attack-row"><span class="ak">Adversary</span><span class="av">T1 — Skilled Attacker</span></div>
+      <div class="attack-row"><span class="ak">Description</span><span class="av">An adversary creates multiple fictitious guardian identities and convinces the DID controller to select them as a threshold of guardians in a social recovery setup. Because the adversary controls multiple positions, they can trivially meet the threshold and execute an unauthorized recovery. Sybil resistance in social recovery depends entirely on the social vetting process for guardian selection, which is out-of-protocol.</span></div>
+      <div class="attack-row"><span class="ak">Mitigations</span><span class="av">REQ-500: Guardian selection SHOULD require guardians to be verified through a Verifiable Credential issued by a trusted issuer (government ID, organizational credential). REQ-501: Wallet implementations SHOULD display a warning when selected guardians share infrastructure (same email domain, IP range, or organizational affiliation). REQ-502: Guardian acceptance SHOULD require a verifiable proof of unique personhood (e.g., Proof of Humanity credential).</span></div>
+    </div>
+  </div>
+
+  <div class="attack-entry">
+    <div class="attack-header">
+      <span class="attack-id">DID-TM-ATK-501</span>
+      <span class="attack-name">Cross-DID Correlation via Resolver Logs</span>
+      <span class="tc tc-i">I — Information Disclosure</span>
+      <span class="cvss-score cvss-medium">CVSS-DID 6.1 Medium</span>
+    </div>
+    <div class="attack-body">
+      <div class="attack-row"><span class="ak">Layer</span><span class="av">Layer 2 — Resolution</span></div>
+      <div class="attack-row"><span class="ak">Adversary</span><span class="av">T1 — Skilled Attacker (or resolver operator)</span></div>
+      <div class="attack-row"><span class="ak">Description</span><span class="av">A party who has access to Universal Resolver request logs can correlate resolution requests originating from the same client IP, user agent, or session to identify that multiple DIDs are controlled by the same subject. This is particularly dangerous when subjects use pairwise DIDs across verifiers — the correlation happens at the resolver layer, below the application privacy controls.</span></div>
+      <div class="attack-row"><span class="ak">Mitigations</span><span class="av">REQ-503: Clients SHOULD resolve DIDs through a privacy-preserving resolver that does not log source IPs (e.g., an onion-routed resolution service). REQ-504: Universal Resolver operators MUST document their data retention policy. REQ-505: Wallet implementations SHOULD perform prefetching of DID Documents during non-sensitive periods to prevent timing correlation of resolution with credential presentations.</span></div>
+    </div>
+  </div>
+
+  <div class="attack-entry">
+    <div class="attack-header">
+      <span class="attack-id">DID-TM-ATK-502</span>
+      <span class="attack-name">Governance Attack on DID Method Registry</span>
+      <span class="tc tc-e">E — Privilege Escalation</span>
+      <span class="tc tc-t">T</span>
+      <span class="cvss-score cvss-high">CVSS-DID 8.3 High</span>
+    </div>
+    <div class="attack-body">
+      <div class="attack-row"><span class="ak">Layer</span><span class="av">Layer 1 — Registry</span></div>
+      <div class="attack-row"><span class="ak">Adversary</span><span class="av">T2 — Well-Funded</span></div>
+      <div class="attack-row"><span class="ak">Description</span><span class="av">Many DID methods rely on off-chain governance for protocol upgrades — multisig smart contract owners, DAOs, or foundation boards. An adversary who gains disproportionate governance power (through token accumulation, board seat acquisition, or legal compulsion of key holders) can push protocol upgrades that introduce backdoors, modify DID resolution logic, or migrate the registry to an adversary-controlled substrate.</span></div>
+      <div class="attack-row"><span class="ak">Mitigations</span><span class="av">REQ-506: DID method specifications MUST document their governance model and the minimum adversary capability required to subvert it. REQ-507: Governance upgrades affecting DID security properties MUST include a time-lock of at least 30 days to allow community review. REQ-508: DID method implementations SHOULD support client-side pinning of known-good registry state to detect governance attacks.</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════ PART IV ════════════════════════════════ -->
+<div class="part-divider" id="part4">
+  <div>
+    <div class="part-num">Part IV</div>
+    <div class="part-title">Cryptographic Threat Analysis</div>
+    <div class="part-desc">Algebraic assumptions · VSS · ZKP · VDF · Threshold signatures · Side-channel · Post-quantum</div>
+  </div>
+</div>
+
+<!-- ════ §17 ALGEBRAIC ════ -->
+<section id="algebraic-assumptions">
+  <h2><span class="sec-num">17.</span> Algebraic Assumptions and Failure Conditions</h2>
+  <p>The cryptographic constructions used in DID systems rest on a hierarchy of hardness assumptions. An assumption failure — whether due to mathematical advances, implementation errors, or quantum computing — cascades upward through all constructions that depend on it. This section catalogs the relevant assumptions and their failure consequences.</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Assumption</th><th>Used In</th><th>Classical Security</th><th>Quantum Security</th><th>Failure Consequence</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Discrete Logarithm (DLog)</strong></td>
+          <td>Feldman VSS commitments, Schnorr proofs, fROST</td>
+          <td>~128 bits (256-bit group)</td>
+          <td>Broken by Shor's algorithm</td>
+          <td>Commitments forgeable; ZKP soundness lost; threshold signatures broken</td>
+        </tr>
+        <tr>
+          <td><strong>Computational Diffie-Hellman (CDH)</strong></td>
+          <td>ECDH in DIDComm, X25519 key agreement</td>
+          <td>~128 bits (Curve25519)</td>
+          <td>Broken by Shor's algorithm</td>
+          <td>Encrypted DIDComm messages retroactively decryptable</td>
+        </tr>
+        <tr>
+          <td><strong>RSA Strong Sequentiality</strong></td>
+          <td>Wesolowski/Pietrzak VDF (RSA groups)</td>
+          <td>~128 bits (2048-bit RSA)</td>
+          <td>Broken by Shor's algorithm</td>
+          <td>VDF time-lock property void; inheritance time-locks immediately bypassable</td>
+        </tr>
+        <tr>
+          <td><strong>Collision Resistance (SHA-256)</strong></td>
+          <td>Credential hashing, Merkle proofs, DID Document content addressing</td>
+          <td>~128 bits</td>
+          <td>Grover: ~64 bits (mitigated by doubling output)</td>
+          <td>Credential forgery; Merkle proof bypass; content addressing collision</td>
+        </tr>
+        <tr>
+          <td><strong>One-Way Function (PBKDF2, HKDF)</strong></td>
+          <td>Seed derivation, key stretching</td>
+          <td>Security determined by parameters</td>
+          <td>Grover: halved effective security</td>
+          <td>Seed recovery from backup material; brute force of weak seeds</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ════ §18 VSS THREATS ════ -->
+<section id="vss-threats">
+  <h2><span class="sec-num">18.</span> VSS-Specific Threats</h2>
+  <p>Feldman's Verifiable Secret Sharing (as specified in DID-KR §7.1) has several attack surfaces arising from incorrect parameterization, implementation errors, and adversarial dealer behavior. This section documents these threats and their normative mitigations.</p>
+
+  <h4>18.1 Incorrect Group Parameterization (DID-TM-ATK-410)</h4>
+  <p>The most critical VSS implementation error is using the wrong modulus for share arithmetic. If shares <code>s_i = P(i) mod p</code> are computed modulo the group prime <code>p</code> rather than the scalar field order <code>q</code>, the Feldman verification equation fails silently for large share values — shares appear to verify but Lagrange interpolation recovers the wrong secret.</p>
+  <div class="callout danger">
+    <div class="callout-label">Critical Implementation Requirement</div>
+    <p>All scalar arithmetic (polynomial evaluation, Lagrange interpolation, share addition during refresh) MUST be performed modulo <code>q</code>, the prime order of the subgroup. Commitment group operations (modular exponentiation for Feldman commitments) are performed modulo <code>p</code>. Mixing these moduli is the most common Feldman VSS implementation vulnerability.</p>
+  </div>
+  <p>Formally: shares live in the scalar field <code>Z_q</code>; commitments live in the group <code>Z_p*</code>. These are distinct algebraic objects. The invariant that enables verification is: <code>ord(g) = q</code>, so <code>g^(x mod q) = g^x mod p</code> for any integer <code>x</code>. This invariant holds only when <code>g</code> is a generator of a subgroup of order exactly <code>q</code> in <code>Z_p*</code>.</p>
+
+  <h4>18.2 Dishonest Dealer Attack (DID-TM-ATK-411)</h4>
+  <p>A dishonest dealer can distribute inconsistent shares — shares that are not evaluations of any single polynomial — if VSS commitment verification is not performed by each participant before acknowledging receipt. The Feldman commitment scheme makes this detectable: if a share <code>s_i</code> does not satisfy the verification equation, the dealer is provably cheating.</p>
+  <p>Mitigations: REQ-420: Each participant MUST verify their share against all commitments upon receipt, before acknowledging. REQ-421: Any participant who receives a share that fails verification MUST broadcast a complaint with the failing verification equation.</p>
+
+  <h4>18.3 Share Refreshment Zero-Term Error (DID-TM-ATK-412)</h4>
+  <p>During proactive refresh (DID-KR §7.1.4), the refresh polynomial <code>R(x)</code> must satisfy <code>R(0) = 0</code> to preserve the secret. If an implementation inadvertently includes a non-zero constant term — due to an off-by-one error in polynomial construction or incorrect coefficient generation — the refresh changes the secret, rendering previously issued credentials (whose holder binding references the original public key) invalid.</p>
+  <div class="math-block">
+<span class="mc">Refresh polynomial MUST satisfy:</span>
+R(x)  =  r₁·x + r₂·x² + … + r_{t-1}·x^{t-1}  over Z_q
+R(0)  =  0  (no constant term)
+<span class="mc">Verification: After refresh, all participants MUST verify:</span>
+P_new(0) = P_old(0)  <span class="mc">// by verifying combined commitments are consistent</span>
+C₀_new    = C₀_old   <span class="mc">// commitment to constant term unchanged</span>
+  </div>
+</section>
+
+<!-- ════ §19 ZKP THREATS ════ -->
+<section id="zkp-threats">
+  <h2><span class="sec-num">19.</span> ZKP-Specific Threats</h2>
+  <h4>19.1 Proof Malleability (DID-TM-ATK-420)</h4>
+  <p>A malleable proof scheme allows an adversary to modify a valid proof to produce another valid proof for the same or a related statement, without knowing the witness. For Schnorr proofs as used in DID-KR §7.2, malleability can arise if the challenge derivation is not commitment-binding or if the verifier accepts proofs with negated response values (since <code>-z</code> is also a valid response in some parameterizations).</p>
+  <p>Mitigation: REQ-430: Implementations MUST use the Fiat-Shamir heuristic with a domain-separated hash function for non-interactive Schnorr proofs. The challenge MUST be derived as <code>c = H(g || g^r || commitments || session_context)</code> where <code>session_context</code> includes the DID, the recovery session ID, and the current timestamp. REQ-431: Response values MUST be checked to be in <code>[0, q-1]</code> before verification.</p>
+
+  <h4>19.2 Soundness Failure under Weak Fiat-Shamir (DID-TM-ATK-421)</h4>
+  <p>The Fiat-Shamir transform produces a non-interactive proof that is only sound in the Random Oracle Model. Implementations that use non-random hash functions, truncated hash outputs, or domain separation that allows cross-protocol collision are vulnerable to soundness attacks where a prover without knowledge of the witness can forge a valid proof.</p>
+  <p>Mitigation: REQ-432: All Fiat-Shamir transformations MUST use SHA-256 or SHA-3-256 with proper domain separation. The domain separator MUST include the protocol identifier <code>"DID-KR-ZKP-v1"</code> and the specific statement type. Hash output MUST NOT be truncated below 128 bits for the challenge.</p>
+</section>
+
+<!-- ════ §20 VDF THREATS ════ -->
+<section id="vdf-threats">
+  <h2><span class="sec-num">20.</span> VDF-Specific Threats</h2>
+  <h4>20.1 ASIC Hardware Advantage (DID-TM-ATK-430)</h4>
+  <p>VDF security relies on the assumption that sequential computation cannot be parallelized. For RSA-based VDFs (Wesolowski, Pietrzak), this assumption holds for software adversaries. However, custom ASIC hardware optimized for modular squaring can execute the sequential squaring chain at clock speeds 10x–100x faster than a reference CPU, undermining the time-lock guarantee by the same factor.</p>
+  <p>Mitigation: REQ-440: VDF parameter specifications MUST include an ASIC advantage factor in the difficulty calibration. For Wesolowski VDFs, a minimum ASIC resistance factor of 10x SHOULD be applied — meaning the intended wall-clock time should be achievable by an ASIC adversary at no less than 10% of the nominal time before the parameter is considered broken. REQ-441: VDF parameters MUST be versioned and updatable without changing the DID controller's key material.</p>
+
+  <h4>20.2 Wesolowski Proof Forgery via Low-Order Elements (DID-TM-ATK-431)</h4>
+  <p>The Wesolowski VDF uses an RSA group whose order is unknown (under the assumption that factoring is hard). An adversary who finds a low-order element in the group can forge a VDF proof without performing the sequential computation. This threat is mitigated by careful modulus generation (using a modulus with no small factors) but must be explicitly verified.</p>
+  <p>Mitigation: REQ-442: VDF moduli MUST be generated using a verifiably random process. REQ-443: Modulus generation ceremonies MUST be documented and publicly auditable. REQ-444: Implementations MUST verify that the VDF input <code>x ∈ QR(N)</code> (quadratic residuosity check) before evaluation.</p>
+</section>
+
+<!-- ════ §21 THRESHOLD THREATS ════ -->
+<section id="threshold-threats">
+  <h2><span class="sec-num">21.</span> Threshold Signature Threats</h2>
+  <h4>21.1 fROST Nonce Reuse (DID-TM-ATK-440)</h4>
+  <p>fROST threshold signatures require each participant to generate a fresh nonce for each signing ceremony. Nonce reuse — whether due to a faulty PRNG, a state rollback, or incorrect ceremony management — allows an adversary who observes two signing rounds with the same nonce to recover the participant's secret share using simple algebra. This is the single most critical implementation requirement for any Schnorr-based threshold signature scheme.</p>
+  <div class="math-block">
+<span class="mc">If nonce r is reused across two signing rounds with messages m₁, m₂:</span>
+z₁ = r + c₁·s_i  mod q
+z₂ = r + c₂·s_i  mod q
+<span class="mc">Then:</span>
+z₁ - z₂ = (c₁ - c₂)·s_i  mod q
+s_i     = (z₁ - z₂) · (c₁ - c₂)⁻¹  mod q  <span class="mc">// secret share recovered</span>
+  </div>
+  <p>Mitigation: REQ-450: fROST implementations MUST use deterministic nonce generation per RFC 6979, seeded with the participant's secret share and the message being signed. REQ-451: Participants MUST abort any signing ceremony where the same nonce has been used in a prior ceremony.</p>
+
+  <h4>21.2 Rogue Key Attack in Key Generation (DID-TM-ATK-441)</h4>
+  <p>In fROST distributed key generation (DKG), a malicious participant can choose their public key share to cancel out or manipulate contributions from other participants, effectively controlling the aggregate public key. This attack is mitigated by requiring proof of knowledge of the corresponding secret key during DKG.</p>
+  <p>Mitigation: REQ-452: fROST DKG implementations MUST require each participant to prove knowledge of their secret key contribution using a Schnorr proof before their public key share is accepted. This is the KOSK (Knowledge of Secret Key) assumption enforcement.</p>
+</section>
+
+<!-- ════ §22 SIDE-CHANNEL ════ -->
+<section id="sidechannel">
+  <h2><span class="sec-num">22.</span> Side-Channel and Implementation Threats</h2>
+  <h4>22.1 Timing Attacks on Key Derivation</h4>
+  <p>Variable-time key derivation or signature operations allow an adversary who can measure operation timing (locally or via remote timing) to extract information about secret key material. For DID wallets, the most common timing attack surface is in the comparison of credential proofs or the conditional branches in Lagrange interpolation.</p>
+  <p>Mitigation: REQ-460: All cryptographic operations involving secret values MUST be implemented in constant time. This includes modular arithmetic, scalar multiplications, and any conditional branch whose path depends on a secret value. Implementations MUST use constant-time comparison functions for all proof verification.</p>
+
+  <h4>22.2 Fault Injection in Hardware Wallets</h4>
+  <p>Hardware wallets are vulnerable to fault injection attacks — voltage glitching, electromagnetic fault injection (EMFI), or laser fault injection — that can cause the secure element to skip security checks, reveal intermediate computation values, or produce faulty signatures from which the key can be derived.</p>
+  <p>Mitigation: REQ-461: Hardware wallets MUST implement fault detection countermeasures including instruction duplication, computation result verification, and random delays. Security certifications (Common Criteria EAL4+, FIPS 140-2 Level 3) are RECOMMENDED for hardware wallets used with high-assurance DIDs.</p>
+</section>
+
+<!-- ════ §23 POST-QUANTUM ════ -->
+<section id="postquantum">
+  <h2><span class="sec-num">23.</span> Post-Quantum Threat Model</h2>
+  <p>The NIST Post-Quantum Cryptography standardization process concluded in 2024, producing final standards for ML-KEM (CRYSTALS-Kyber), ML-DSA (CRYSTALS-Dilithium), and SLH-DSA (SPHINCS+) [NIST-PQC-2024]. DID systems built on elliptic curve cryptography face a long-term threat from quantum computing that requires a deliberate migration strategy.</p>
+
+  <h4>23.1 Harvest-Now Decrypt-Later</h4>
+  <p>An adversary can archive encrypted DIDComm messages, sealed credential lockboxes, and other encrypted identity data today, with the intent to decrypt them when a cryptographically relevant quantum computer becomes available. For long-lived identity data (medical records, legal credentials, financial history), this represents a present-day threat to future privacy.</p>
+  <p>Mitigation: REQ-470: DIDComm implementations SHOULD migrate to hybrid classical/post-quantum key encapsulation mechanisms (HPKE with ML-KEM-768 + X25519). REQ-471: VDF moduli MUST be transitioned to class group-based constructions that are believed to be quantum-resistant, as RSA-group VDFs are broken by Shor's algorithm.</p>
+
+  <h4>23.2 Migration Window Analysis</h4>
+  <p>Post-quantum migration for DID systems requires coordinated updates across four layers simultaneously: signing algorithms for DID Document proofs, key agreement algorithms for DIDComm, credential proof algorithms for VCs, and threshold signature algorithms for MPC recovery. Partial migration leaves the weakest layer as the attack vector.</p>
+  <div class="callout warning">
+    <div class="callout-label">Migration Requirement</div>
+    <p>DID method specifications MUST define a quantum migration path before deploying DIDs intended to be valid beyond 2030. The migration MUST address all four cryptographic layers simultaneously and MUST NOT rely on the simultaneous availability of both classical and post-quantum security to avoid creating a hybrid-mode vulnerability.</p>
+  </div>
+
+  <div class="diagram-container">
+    <div class="diagram-title">Figure 3 — Post-Quantum Migration Dependencies</div>
+    <div class="mermaid">
+graph LR
+    DID_SIGN["DID Document\nSigning\n(Ed25519 → ML-DSA)"] --> VC_PROOF
+    KEY_AGREE["Key Agreement\n(X25519 → ML-KEM)"] --> DIDCOMM
+    VC_PROOF["VC Proof\n(EdDSA → ML-DSA)"] --> PRESENTATION
+    DIDCOMM["DIDComm\nEncryption"] --> PRESENTATION
+    PRESENTATION["Presentation\nProtocol"] --> RECOVERY
+    THRESHOLD["Threshold Sigs\n(fROST → PQ-FROST)"] --> RECOVERY
+    RECOVERY["Recovery\nSystem"]
+
+    style DID_SIGN fill:#fff1f2,stroke:#fca5a5,color:#7f1d1d
+    style KEY_AGREE fill:#fff1f2,stroke:#fca5a5,color:#7f1d1d
+    style VC_PROOF fill:#fffbeb,stroke:#fbbf24,color:#78350f
+    style DIDCOMM fill:#fffbeb,stroke:#fbbf24,color:#78350f
+    style PRESENTATION fill:#eff6ff,stroke:#60a5fa,color:#1e3a5f
+    style THRESHOLD fill:#fff1f2,stroke:#fca5a5,color:#7f1d1d
+    style RECOVERY fill:#f0fdf4,stroke:#4ade80,color:#14532d
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════ PART V ════════════════════════════════ -->
+<div class="part-divider" id="part5">
+  <div>
+    <div class="part-num">Part V</div>
+    <div class="part-title">Normative Countermeasures</div>
+    <div class="part-desc">Security requirements · Privacy requirements · Traceability matrix</div>
+  </div>
+</div>
+
+<!-- ════ §24 SECURITY REQUIREMENTS ════ -->
+<section id="security-requirements">
+  <h2><span class="sec-num">24.</span> Normative Security Requirements</h2>
+  <p>The following requirements are normative. Each requirement is assigned an identifier, a requirement level (MUST/SHOULD/MAY per RFC 2119), the applicable DID stack component, and a pointer to the threat(s) it mitigates.</p>
+
+  <h4>24.1 DID Registry Requirements</h4>
+  <ul>
+    <li><strong>REQ-50:</strong> [MUST] DID registry smart contracts MUST implement Checks-Effects-Interactions. Mitigates: DID-TM-ATK-050.</li>
+    <li><strong>REQ-51:</strong> [MUST] Registry contracts MUST use a reentrancy guard. Mitigates: DID-TM-ATK-050.</li>
+    <li><strong>REQ-52:</strong> [MUST] did:web implementations MUST use DNSSEC and TLS certificate monitoring. Mitigates: DID-TM-ATK-051.</li>
+    <li><strong>REQ-53:</strong> [SHOULD] did:web DID Documents SHOULD include a self-signed proof for detection of unauthorized modification. Mitigates: DID-TM-ATK-051.</li>
+    <li><strong>REQ-54:</strong> [MUST] Resolvers MUST connect to multiple independent ledger nodes. Mitigates: DID-TM-ATK-052.</li>
+  </ul>
+
+  <h4>24.2 Resolver Requirements</h4>
+  <ul>
+    <li><strong>REQ-100:</strong> [MUST] Cached DID Documents MUST be cryptographically anchored to the registry. Mitigates: DID-TM-ATK-100.</li>
+    <li><strong>REQ-101:</strong> [MUST] Cache TTLs MUST NOT exceed DID method minimum update propagation time. Mitigates: DID-TM-ATK-100.</li>
+    <li><strong>REQ-103:</strong> [MUST] Resolvers MUST validate all DID Document URLs against an allowlist. Mitigates: DID-TM-ATK-101.</li>
+    <li><strong>REQ-105:</strong> [MUST] DID Document size MUST be limited (RECOMMENDED: 64 KB). Mitigates: DID-TM-ATK-102.</li>
+    <li><strong>REQ-107:</strong> [MUST] Resolvers MUST implement rate limiting per source IP and DID method. Mitigates: DID-TM-ATK-102.</li>
+  </ul>
+
+  <h4>24.3 Wallet Requirements</h4>
+  <ul>
+    <li><strong>REQ-200:</strong> [MUST] Wallets MUST use OS-provided secure key storage for all private key material. Mitigates: DID-TM-ATK-200.</li>
+    <li><strong>REQ-201:</strong> [MUST] Seed phrases MUST NOT be held decrypted in heap memory beyond minimum required time. Mitigates: DID-TM-ATK-200.</li>
+    <li><strong>REQ-203:</strong> [MUST] Wallets MUST display seed phrases in a secure UI surface preventing clipboard access. Mitigates: DID-TM-ATK-201.</li>
+    <li><strong>REQ-205:</strong> [MUST] Wallets MUST use hardware-backed biometric APIs. Mitigates: DID-TM-ATK-202.</li>
+    <li><strong>REQ-460:</strong> [MUST] All cryptographic operations involving secret values MUST be constant-time. Mitigates: §22.1.</li>
+  </ul>
+
+  <h4>24.4 Credential and Presentation Requirements</h4>
+  <ul>
+    <li><strong>REQ-300:</strong> [MUST] Verifiable Presentations MUST include a verifier-provided nonce bound to the proof. Mitigates: DID-TM-ATK-300.</li>
+    <li><strong>REQ-301:</strong> [MUST] Presentation expiry MUST NOT exceed 5 minutes for interactive authentication. Mitigates: DID-TM-ATK-300.</li>
+    <li><strong>REQ-303:</strong> [MUST] Credentials MUST include credentialSubject.id corresponding to a holder-controlled DID. Mitigates: DID-TM-ATK-301.</li>
+    <li><strong>REQ-306:</strong> [MUST] ZKP presentation proofs MUST use fresh, cryptographically secure randomness for each generation. Mitigates: DID-TM-ATK-302.</li>
+  </ul>
+
+  <h4>24.5 Recovery Requirements</h4>
+  <ul>
+    <li><strong>REQ-400:</strong> [MUST] Guardian sets MUST be distributed across independent jurisdictions and organizations. Mitigates: DID-TM-ATK-400.</li>
+    <li><strong>REQ-404:</strong> [MUST] MPC implementations MUST implement the catch-up protocol (DID-KR §5.4.3). Mitigates: DID-TM-ATK-401.</li>
+    <li><strong>REQ-408:</strong> [MUST] VDF difficulty MUST include a tolerance factor ≥ 0.3. Mitigates: DID-TM-ATK-402.</li>
+    <li><strong>REQ-412:</strong> [MUST] Every submitted VSS share MUST be verified against Feldman commitments before Lagrange interpolation. Mitigates: DID-TM-ATK-403.</li>
+    <li><strong>REQ-415:</strong> [MUST] Recovery method dependency graphs MUST be validated as acyclic at publication time. Mitigates: DID-TM-ATK-404.</li>
+    <li><strong>REQ-450:</strong> [MUST] fROST implementations MUST use deterministic nonce generation per RFC 6979. Mitigates: DID-TM-ATK-440.</li>
+  </ul>
+</section>
+
+<!-- ════ §25 PRIVACY REQUIREMENTS ════ -->
+<section id="privacy-requirements">
+  <h2><span class="sec-num">25.</span> Normative Privacy Requirements</h2>
+
+  <h4>25.1 Selective Disclosure Requirements</h4>
+  <ul>
+    <li><strong>PRI-100:</strong> [MUST] Credential issuers MUST support selective disclosure schemes (BBS+, SD-JWT, or AnonCreds) for credentials containing more than one attribute.</li>
+    <li><strong>PRI-101:</strong> [MUST] Wallet implementations MUST NOT present more claims than explicitly requested by the verifier's presentation request.</li>
+    <li><strong>PRI-102:</strong> [SHOULD] Verifiers SHOULD request the minimum set of claims necessary for their use case (data minimization principle).</li>
+  </ul>
+
+  <h4>25.2 Unlinkability Requirements</h4>
+  <ul>
+    <li><strong>PRI-200:</strong> [MUST] Holders MUST use pairwise DIDs (unique DID per verifier relationship) for all interactions where unlinkability is a requirement.</li>
+    <li><strong>PRI-201:</strong> [MUST] ZKP presentation proofs MUST achieve proof unlinkability across presentations (no shared proof components across presentations to different verifiers).</li>
+    <li><strong>PRI-202:</strong> [SHOULD] DID resolution SHOULD be performed through anonymizing infrastructure (Tor, onion services) where unlinkability at the resolver layer is required.</li>
+  </ul>
+
+  <h4>25.3 Minimization Requirements</h4>
+  <ul>
+    <li><strong>PRI-300:</strong> [MUST] DID Documents MUST NOT contain personal data. Service endpoints MUST NOT include information that could identify the subject without DID resolution.</li>
+    <li><strong>PRI-301:</strong> [MUST] Recovery method representations in DID Documents MUST use hashed or pseudonymous guardian identifiers (see DID-KR §9.2). Mitigates: DID-TM-ATK-501.</li>
+    <li><strong>PRI-302:</strong> [SHOULD] Issuers SHOULD issue single-use credentials for sensitive attributes to prevent accumulation of presentation history at verifiers.</li>
+  </ul>
+</section>
+
+<!-- ════ §26 TRACEABILITY MATRIX ════ -->
+<section id="traceability-matrix">
+  <h2><span class="sec-num">26.</span> Threat-to-Control Traceability Matrix</h2>
+  <p>The following matrix maps selected attacks to their primary normative controls. Y = directly addresses the threat; P = partially addresses; N = not addressed by this control.</p>
+
+  <div class="matrix-wrap">
+    <table class="matrix-table">
+      <thead>
+        <tr>
+          <th style="text-align:left;width:200px">Attack</th>
+          <th>REQ-50/51</th>
+          <th>REQ-100/101</th>
+          <th>REQ-200/201</th>
+          <th>REQ-300/301</th>
+          <th>REQ-400/401</th>
+          <th>REQ-412/413</th>
+          <th>REQ-415</th>
+          <th>REQ-450/451</th>
+          <th>PRI-200/201</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="row-head">ATK-050 Smart contract reentrancy</td>
+          <td class="matrix-cell-y">Y</td><td class="matrix-cell-n">N</td><td class="matrix-cell-n">N</td><td class="matrix-cell-n">N</td><td class="matrix-cell-n">N</td><td class="matrix-cell-n">N</td><td class="matrix-cell-n">N</td><td class="matrix-cell-n">N</td><td class="matrix-cell-n">N</td>
+        </tr>
+        <tr>
+          <td class="row-head">ATK-100 Resolver cache poisoning</td>
+          <td class="matrix-cell-n">N</td><td class="matrix-cell-y">Y</td><td class="matrix-cell-n">N</td><td class="matrix-cell-n">N</td><td class="matrix-cell-n">N</td><td class="matrix-cell-n">N</td><td class="matrix-cell-n">N</td><td class="matrix-cell-n">N</td><td class="matrix-cell-n">N</td>
+        </tr>
+        <tr>
+          <td class="row-head">ATK-200 Cold boot key extraction</td>
+          <td class="matrix-cell-n">N</td><td class="matrix-cell-n">N</td><td class="matrix-cell-y">Y</td><td class="matrix-cell-n">N</td><td class="matrix-cell-n">N</td><td class="matrix-cell-n">N</td><td class="matrix-cell-n">N</td><td class="matrix-cell-n">N</td><td class="matrix-cell-n">N</td>
+        </tr>
+        <tr>
+          <td class="row-head">ATK-300 VP replay</td>
+          <td class="matrix-cell-n">N</td><td class="matrix-cell-n">N</td><td class="matrix-cell-n">N</td><td class="matrix-cell-y">Y</td><td class="matrix-cell-n">N</td><td class="matrix-cell-n">N</td><td class="matrix-cell-n">N</td><td class="matrix-cell-n">N</td><td class="matrix-cell-n">N</td>
+        </tr>
+        <tr>
+          <td class="row-head">ATK-400 Guardian collusion</td>
+          <td class="matrix-cell-n">N</td><td class="matrix-cell-n">N</td><td class="matrix-cell-n">N</td><td class="matrix-cell-n">N</td><td class="matrix-cell-y">Y</td><td class="matrix-cell-n">N</td><td class="matrix-cell-n">N</td><td class="matrix-cell-n">N</td><td class="matrix-cell-n">N</td>
+        </tr>
+        <tr>
+          <td class="row-head">ATK-403 VSS share pollution</td>
+          <td class="matrix-cell-n">N</td><td class="matrix-cell-n">N</td><td class="matrix-cell-n">N</td><td class="matrix-cell-n">N</td><td class="matrix-cell-p">P</td><td class="matrix-cell-y">Y</td><td class="matrix-cell-n">N</td><td class="matrix-cell-n">N</td><td class="matrix-cell-n">N</td>
+        </tr>
+        <tr>
+          <td class="row-head">ATK-404 Recovery loop deadlock</td>
+          <td class="matrix-cell-n">N</td><td class="matrix-cell-n">N</td><td class="matrix-cell-n">N</td><td class="matrix-cell-n">N</td><td class="matrix-cell-n">N</td><td class="matrix-cell-n">N</td><td class="matrix-cell-y">Y</td><td class="matrix-cell-n">N</td><td class="matrix-cell-n">N</td>
+        </tr>
+        <tr>
+          <td class="row-head">ATK-440 fROST nonce reuse</td>
+          <td class="matrix-cell-n">N</td><td class="matrix-cell-n">N</td><td class="matrix-cell-n">N</td><td class="matrix-cell-n">N</td><td class="matrix-cell-n">N</td><td class="matrix-cell-n">N</td><td class="matrix-cell-n">N</td><td class="matrix-cell-y">Y</td><td class="matrix-cell-n">N</td>
+        </tr>
+        <tr>
+          <td class="row-head">ATK-501 Resolver log correlation</td>
+          <td class="matrix-cell-n">N</td><td class="matrix-cell-n">N</td><td class="matrix-cell-n">N</td><td class="matrix-cell-n">N</td><td class="matrix-cell-n">N</td><td class="matrix-cell-n">N</td><td class="matrix-cell-n">N</td><td class="matrix-cell-n">N</td><td class="matrix-cell-y">Y</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ════════════════════════════════ PART VI ════════════════════════════════ -->
+<div class="part-divider" id="part6">
+  <div>
+    <div class="part-num">Part VI</div>
+    <div class="part-title">Compliance &amp; Interoperability</div>
+    <div class="part-desc">Framework alignment · DID method security profiles</div>
+  </div>
+</div>
+
+<!-- ════ §27 FRAMEWORK ALIGNMENT ════ -->
+<section id="framework-alignment">
+  <h2><span class="sec-num">27.</span> Regulatory and Framework Alignment</h2>
+
+  <h4>27.1 NIST SP 800-63 Digital Identity Guidelines</h4>
+  <p>NIST SP 800-63 defines Identity Assurance Levels (IAL), Authentication Assurance Levels (AAL), and Federation Assurance Levels (FAL). DID-TM security requirements map to these levels as follows:</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Assurance Level</th><th>Relevant DID-TM Requirements</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>IAL2</td><td>REQ-303, REQ-304 (credential subject binding)</td><td>Identity evidence verification out of scope for DID-TM but referenced by REQ-500</td></tr>
+        <tr><td>AAL2</td><td>REQ-205 (hardware-backed biometrics), REQ-206 (MFA for high-value ops)</td><td>Did method key binding satisfies "something you have"</td></tr>
+        <tr><td>AAL3</td><td>REQ-461 (hardware security module), REQ-200 (secure enclave key storage)</td><td>Hardware cryptographic module requirement met by HSM/SE wallets</td></tr>
+        <tr><td>FAL2</td><td>REQ-300 (nonce binding), REQ-302 (nonce cache)</td><td>Holder-presented VC with nonce binding satisfies FAL2 replay resistance</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h4>27.2 ISO/IEC 27001 and SOC 2</h4>
+  <p>DID-TM requirements applicable to infrastructure operators (resolver services, MPC providers, guardian services) map to ISO 27001 controls and SOC 2 Trust Services Criteria as follows: The Annex A control A.12.2 (Protection from malware) maps to REQ-201 and REQ-203. A.14.2.8 (System security testing) maps to the test assertions in Appendix A. SOC 2 CC6.1 (logical access controls) maps to REQ-200 through REQ-206.</p>
+
+  <h4>27.3 eIDAS 2.0 / European Digital Identity Wallet</h4>
+  <p>The European Digital Identity (EUDI) Wallet under eIDAS 2.0 defines security requirements for qualified electronic signatures and seals that must be grounded in Common Criteria-certified hardware. DID-TM REQ-461 (hardware wallet certification) aligns with the eIDAS 2.0 QEAA (Qualified Electronic Attestation of Attributes) requirements. The credential format requirements of the EUDI Architecture Reference Framework (ARF) are satisfied by conformance to REQ-303 through REQ-308.</p>
+
+  <h4>27.4 W3C DID Core §10–11 Gap Analysis</h4>
+  <p>W3C DID Core §10 identifies security considerations including residual risks of compromise, authentication, verification relationships, and DID method security. This specification extends each consideration into normative requirements with specific attack identifiers and measurable test assertions. The primary gap filled by DID-TM is the absence of a formal threat taxonomy in DID Core: the specification lists considerations but does not provide a framework for systematically eliciting or classifying threats, a gap addressed by the STRIDE-DID taxonomy in §4–5.</p>
+</section>
+
+<!-- ════ §28 DID METHOD PROFILES ════ -->
+<section id="did-method-profiles">
+  <h2><span class="sec-num">28.</span> DID Method Security Profiles</h2>
+  <p>Different DID methods have materially different security properties. This section provides a threat exposure profile for the four most widely deployed methods.</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Method</th>
+          <th>Registry Trust Model</th>
+          <th>Highest Exposure Threat Classes</th>
+          <th>K-Class Profile</th>
+          <th>Quantum Exposure</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>did:web</strong></td>
+          <td>DNS + HTTPS (centralized, operator-controlled)</td>
+          <td><span class="tc tc-s">S</span> (DNS hijack), <span class="tc tc-t">T</span> (host compromise)</td>
+          <td>Low; no on-chain key material</td>
+          <td>High; TLS PKI is quantum-vulnerable</td>
+        </tr>
+        <tr>
+          <td><strong>did:key</strong></td>
+          <td>None; key material is the DID</td>
+          <td><span class="tc tc-k">K</span> (no rotation possible), <span class="tc tc-d">D</span> (permanent key loss = DID loss)</td>
+          <td>Critical; key loss = permanent DID loss; no recovery path</td>
+          <td>Critical; Ed25519/X25519 broken by quantum</td>
+        </tr>
+        <tr>
+          <td><strong>did:ion</strong> (Sidetree/Bitcoin)</td>
+          <td>Bitcoin blockchain (PoW, high cost to rewrite)</td>
+          <td><span class="tc tc-t">T</span> (limited; high reorg cost), <span class="tc tc-d">D</span> (fee griefing)</td>
+          <td>Medium; key rotation supported via Sidetree recovery keys; recovery key loss is permanent</td>
+          <td>Medium; Bitcoin PoW has some quantum resistance; ECDSA key exposure is quantum-vulnerable</td>
+        </tr>
+        <tr>
+          <td><strong>did:peer</strong></td>
+          <td>Out-of-band exchange; no external registry</td>
+          <td><span class="tc tc-s">S</span> (peer impersonation at setup), <span class="tc tc-r">R</span> (no external audit trail)</td>
+          <td>High; rotation requires re-establishment of all peer relationships</td>
+          <td>Medium; offline key material; quantum threat is key-specific</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ════════════════════════════════ APPENDICES ════════════════════════════════ -->
+
+<!-- APPENDIX A: TEST ASSERTIONS -->
+<section id="appendix-a">
+  <h2>Appendix A: Test Assertions</h2>
+  <p>The following test assertions are normative. A conforming implementation MUST pass all applicable assertions. Assertions are designated by component scope: [W] = wallet, [R] = resolver, [M] = DID method, [V] = verifier.</p>
+
+  <pre><code class="language-json">{
+  "testSuite": "DID-TM-v1",
+  "assertions": [
+    {
+      "id": "DID-TM-TA-001",
+      "scope": ["W"],
+      "requirement": "REQ-200",
+      "description": "Wallet MUST store private keys in OS secure storage",
+      "method": "static-analysis",
+      "passCriteria": "No private key bytes in cleartext heap or swap",
+      "attack": "DID-TM-ATK-200"
+    },
+    {
+      "id": "DID-TM-TA-002",
+      "scope": ["V"],
+      "requirement": "REQ-300",
+      "description": "Verifier MUST reject VP without verifier-issued nonce",
+      "method": "protocol-test",
+      "passCriteria": "HTTP 400 response when presentation.proof.challenge absent",
+      "attack": "DID-TM-ATK-300"
+    },
+    {
+      "id": "DID-TM-TA-003",
+      "scope": ["W"],
+      "requirement": "REQ-412",
+      "description": "VSS reconstruction MUST verify all shares before interpolation",
+      "method": "unit-test",
+      "passCriteria": "Reconstruction aborts with error when any share fails Feldman verification",
+      "attack": "DID-TM-ATK-403"
+    },
+    {
+      "id": "DID-TM-TA-004",
+      "scope": ["M"],
+      "requirement": "REQ-415",
+      "description": "DID method MUST reject DID Documents with cyclic recovery dependencies",
+      "method": "protocol-test",
+      "passCriteria": "DID update rejected when recovery method dependency graph contains cycle",
+      "attack": "DID-TM-ATK-404"
+    },
+    {
+      "id": "DID-TM-TA-005",
+      "scope": ["W"],
+      "requirement": "REQ-450",
+      "description": "fROST implementation MUST use deterministic nonce per RFC 6979",
+      "method": "unit-test",
+      "passCriteria": "Same (message, key) pair produces identical nonce across invocations",
+      "attack": "DID-TM-ATK-440"
+    }
+  ]
+}</code></pre>
+</section>
+
+<!-- APPENDIX B: THREAT REGISTER TEMPLATE -->
+<section id="appendix-b">
+  <h2>Appendix B: Threat Register Template</h2>
+  <p>Implementers SHOULD maintain a threat register using the following JSON schema for each DID system deployment. The register enables ongoing threat tracking and provides evidence for security audits.</p>
+  <pre><code class="language-json">{
+  "$schema": "https://sirraya.org/schemas/did-tm-threat-register/v1",
+  "system": "Example DID Wallet v2.1",
+  "assessmentDate": "2026-01-15",
+  "assessor": "Security Team, Example Corp",
+  "threats": [
+    {
+      "attackId": "DID-TM-ATK-200",
+      "attackName": "Cold Boot Seed Phrase Extraction",
+      "class": "K",
+      "cvss_did": "9.6",
+      "inherentRisk": "Critical",
+      "controlsImplemented": ["REQ-200", "REQ-201", "REQ-202"],
+      "residualRisk": "Low",
+      "residualRiskJustification": "iOS Secure Enclave stores key material; seed phrase cleared from memory immediately after derivation; mlock applied to key derivation buffers",
+      "reviewDate": "2026-07-15"
+    }
+  ]
+}</code></pre>
+</section>
+
+<!-- APPENDIX C: JSON-LD CONTEXT -->
+<section id="appendix-c">
+  <h2>Appendix C: JSON-LD Context</h2>
+  <p>Available at: <code>https://sirraya.org/ns/did/threat-model/v1.jsonld</code></p>
+  <pre><code class="language-json">{
+  "@context": {
+    "@version": 1.1,
+    "@protected": true,
+
+    "id": "@id",
+    "type": "@type",
+
+    "ThreatModel":        "https://sirraya.org/ns/did/threat-model#ThreatModel",
+    "ThreatEntry":        "https://sirraya.org/ns/did/threat-model#ThreatEntry",
+    "AttackCatalogEntry": "https://sirraya.org/ns/did/threat-model#AttackCatalogEntry",
+
+    "threatModel": {
+      "@id": "https://sirraya.org/ns/did/threat-model#threatModel",
+      "@type": "@id"
+    },
+    "attackId": {
+      "@id": "https://sirraya.org/ns/did/threat-model#attackId",
+      "@type": "xsd:string"
+    },
+    "threatClass": {
+      "@id": "https://sirraya.org/ns/did/threat-model#threatClass",
+      "@type": "xsd:string"
+    },
+    "cvssDid": {
+      "@id": "https://sirraya.org/ns/did/threat-model#cvssDid",
+      "@type": "xsd:decimal"
+    },
+    "mitigationRefs": {
+      "@id": "https://sirraya.org/ns/did/threat-model#mitigationRefs",
+      "@type": "xsd:string",
+      "@container": "@list"
+    },
+    "residualRisk": {
+      "@id": "https://sirraya.org/ns/did/threat-model#residualRisk",
+      "@type": "xsd:string"
+    },
+    "assessmentDate": {
+      "@id": "https://sirraya.org/ns/did/threat-model#assessmentDate",
+      "@type": "xsd:date"
+    }
+  }
+}</code></pre>
+</section>
+
+<!-- ════ REFERENCES ════ -->
+<section id="references">
+  <h2>Appendix D: References</h2>
+
+  <h3>Normative References</h3>
+  <dl>
+    <dt>[DID-CORE]</dt><dd>W3C. "Decentralized Identifiers (DIDs) v1.0." W3C Recommendation, 2022. https://www.w3.org/TR/did-core/</dd>
+    <dt>[DID-KR]</dt><dd>Mir, A. H. "DID Key Recovery Specification v1.0.0." Sirraya Labs, 2026.</dd>
+    <dt>[VC-DATA-MODEL]</dt><dd>W3C. "Verifiable Credentials Data Model 2.0." W3C Recommendation, 2024.</dd>
+    <dt>[RFC2119]</dt><dd>Bradner, S. "Key words for use in RFCs to Indicate Requirement Levels." IETF RFC 2119, 1997.</dd>
+    <dt>[RFC8174]</dt><dd>Leiba, B. "Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words." IETF RFC 8174, 2017.</dd>
+    <dt>[RFC6979]</dt><dd>Thomas, P. "Deterministic Usage of the Digital Signature Algorithm (DSA) and Elliptic Curve Digital Signature Algorithm (ECDSA)." IETF RFC 6979, 2013.</dd>
+    <dt>[CVSS-31]</dt><dd>FIRST.org. "Common Vulnerability Scoring System v3.1 Specification." 2019.</dd>
+    <dt>[NIST-PQC-2024]</dt><dd>NIST. "Post-Quantum Cryptography Standards." FIPS 203, 204, 205, 2024.</dd>
+    <dt>[NIST-SP-800-63]</dt><dd>NIST. "Digital Identity Guidelines." SP 800-63-3, 2017.</dd>
+  </dl>
+
+  <h3>Informative References</h3>
+  <dl>
+    <dt>[STRIDE-ORIGINAL]</dt><dd>Kohnfelder, L. &amp; Garg, P. "The threats to our products." Microsoft Interface, 1999.</dd>
+    <dt>[DENG-2011]</dt><dd>Deng, M., Wuyts, K., Scandariato, R., Preneel, B., Joosen, W. "A privacy threat analysis framework: supporting the elicitation and fulfillment of privacy requirements." Requirements Engineering Journal, 2011.</dd>
+    <dt>[FELDMAN-1987]</dt><dd>Feldman, P. "A Practical Scheme for Non-interactive Verifiable Secret Sharing." FOCS 1987.</dd>
+    <dt>[SHAMIR-1979]</dt><dd>Shamir, A. "How to Share a Secret." Communications of the ACM, 1979.</dd>
+    <dt>[HERZBERG-1995]</dt><dd>Herzberg, A., Jarecki, S., Krawczyk, H., Yung, M. "Proactive Secret Sharing, Or: How to Cope With Perpetual Leakage." CRYPTO 1995.</dd>
+    <dt>[BONEH-2018]</dt><dd>Boneh, D., Bonneau, J., Bünz, B., Fisch, B. "Verifiable Delay Functions." CRYPTO 2018.</dd>
+    <dt>[BONNEAU-2012]</dt><dd>Bonneau, J., Herley, C., van Oorschot, P. C., Stajano, F. "The Quest to Replace Passwords." IEEE S&amp;P 2012.</dd>
+    <dt>[HALDERMAN-2008]</dt><dd>Halderman, J. A. et al. "Lest We Remember: Cold Boot Attacks on Encryption Keys." USENIX Security 2008.</dd>
+    <dt>[FETT-DID-2019]</dt><dd>Fett, D., Küsters, R., Schmitz, G. "An Extensive Formal Security Analysis of the OpenID Financial-grade API." IEEE S&amp;P 2019.</dd>
+    <dt>[ATZEI-2017]</dt><dd>Atzei, N., Bartoletti, M., Cimoli, T. "A Survey of Attacks on Ethereum Smart Contracts." ICPSS 2017.</dd>
+    <dt>[HEILMAN-2015]</dt><dd>Heilman, E., Kendler, A., Zohar, A., Goldberg, S. "Eclipse Attacks on Bitcoin's Peer-to-Peer Network." USENIX Security 2015.</dd>
+    <dt>[CHAUM-1985]</dt><dd>Chaum, D. "Security without identification: Transaction systems to make big brother obsolete." CACM 1985.</dd>
+    <dt>[MUHLE-2018]</dt><dd>Mühle, A., Grüner, A., Gayvoronskaya, T., Meinel, C. "A Survey on Essential Components of a Self-Sovereign Identity." Computer Science Review, 2018.</dd>
+    <dt>[PEDERSEN-1992]</dt><dd>Pedersen, T. P. "Non-Interactive and Information-Theoretic Secure Verifiable Secret Sharing." CRYPTO 1991.</dd>
+    <dt>[GENNARO-1996]</dt><dd>Gennaro, R., Jarecki, S., Krawczyk, H., Rabin, T. "Robust Threshold DSS Signatures." EUROCRYPT 1996.</dd>
+  </dl>
+</section>
+
+<!-- ════ ACKNOWLEDGEMENTS ════ -->
+<section id="acknowledgements">
+  <h2>Appendix E: Acknowledgements</h2>
+  <p>The editor wishes to acknowledge the foundational contributions of the cryptographic research community whose work is cited throughout this specification, particularly the authors of the Feldman VSS, proactive secret sharing, and VDF literature. The DID-TM specification builds directly on the security work of the W3C Verifiable Credentials Working Group, the Decentralized Identity Foundation (DIF), and the Trust Over IP Foundation.</p>
+  <p>Special acknowledgement is due to the researchers whose work established the theoretical foundations that make formal DID threat modeling possible: the formalization of Schnorr proofs and their use in threshold schemes (Schnorr 1991), the Fiat-Shamir heuristic (Fiat &amp; Shamir 1987), and the proactive secret sharing framework that underpins MPC-mediated recovery security (Herzberg et al. 1995).</p>
+  <p>The K-class taxonomy was developed in conjunction with the DID Key Recovery Extension (DID-KR), and the authors of that specification's cryptographic constructions directly informed the K2, K3, and K4 sub-category definitions.</p>
+</section>
+
+<!-- ── Footer ── -->
+<div class="spec-footer">
+  <p>© 2026 Sirraya Labs. Licensed under the MIT License. Document identifier: <code>did-tm-v1.0.0-editors-draft</code></p>
+  <p>Editor: Amir Hameed Mir · <a href="mailto:amir@sirraya.org">amir@sirraya.org</a> · <a href="https://github.com/sirraya-labs/did-tm">github.com/sirraya-labs/did-tm</a></p>
+</div>
+
+</main>
+</div>
+
+<script>
+mermaid.initialize({
+  startOnLoad: true,
+  theme: 'neutral',
+  sequence: { actorMargin: 60, height: 45 },
+  flowchart: { useMaxWidth: true, curve: 'basis' }
+});
+hljs.highlightAll();
+
+const sections = document.querySelectorAll('section[id], div[id]');
+const links = document.querySelectorAll('.toc-list a');
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      links.forEach(l => l.classList.remove('active'));
+      const a = document.querySelector(`.toc-list a[href="#${e.target.id}"]`);
+      if (a) a.classList.add('active');
+    }
+  });
+}, { rootMargin: '-15% 0px -75% 0px' });
+sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>
