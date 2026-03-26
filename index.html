@@ -581,37 +581,46 @@ dd { margin-left:1.75rem; margin-bottom:0.4rem; color:var(--ink-light); }
 </div>
 
   <!-- ════ ABSTRACT ════ -->
-  <section id="abstract" class="abstract">
-    <h2><span class="sec-num">§</span>Abstract</h2>
-    <p>
-      This specification defines a comprehensive, literature-backed threat model and security framework 
-      designed to <strong>complement and extend</strong> existing W3C threat modeling efforts for 
-      Decentralized Identifiers (DIDs), Verifiable Credentials (VCs), and Self-Sovereign Identity (SSI) 
-      infrastructure. It introduces <strong>STRIDE-DID</strong>—an adaptation of the classical STRIDE 
-      taxonomy purpose-built for decentralized architectures—and proposes an eighth threat class, 
-      <strong>K (Key Lifecycle Failure)</strong>, which has no equivalent in any existing threat modeling 
-      framework and represents the primary novel contribution of this specification.
-    </p>
-    <p>
-      The <strong>K-Class</strong> specifically addresses recovery-layer risks that are distinct from core 
-      DID resolution threats, providing granular focus on the security of decentralized key recovery (DKR), 
-      social recovery, guardian collusion, MPC share drift, VDF time-lock integrity, and key rotation 
-      lifecycles—threats that are often irreversible in decentralized systems where the key <em>is</em> 
-      the identity.
-    </p>
-    <p>
-      The specification provides:
-    </p>
-    <ul>
-      <li>A formal taxonomy of 7 threat classes (STRIDE-DID + K-Class).</li>
-      <li>A structured attack catalog of over 50 named attacks with unique identifiers (<code>DID-TM-ATK-NNN</code>), attack trees, CVSS-DID scores, and peer-reviewed literature citations.</li>
-      <li>Cryptographic threat analysis covering Verifiable Secret Sharing (VSS), Zero-Knowledge Proofs (ZKP), Verifiable Delay Functions (VDF), and threshold signature schemes (fROST).</li>
-      <li>Normative security and privacy requirements (MUST/SHOULD/MAY) with threat-to-control traceability.</li>
-      <li>Compliance alignment with NIST SP 800-63, ISO 27001, eIDAS 2.0, and SOC 2.</li>
-      <li>A machine-readable <code>JSON-LD</code> context for embedding threat metadata in DID Documents.</li>
-    </ul>
-    
-  </section>
+ <section id="abstract" class="abstract">
+  <h2><span class="sec-num">§</span>Abstract</h2>
+  <p>
+    This specification defines a comprehensive, literature-backed threat model and security framework 
+    designed to <strong>complement and extend</strong> existing W3C threat modeling efforts for 
+    Decentralized Identifiers (DIDs), Verifiable Credentials (VCs), and Self-Sovereign Identity (SSI) 
+    infrastructure. It serves as the <strong>formal security and privacy companion</strong> to the 
+    DID Key Recovery Extension (DID-KR), providing the rigorous threat taxonomy, attack catalog, and 
+    normative countermeasures that underpin the security considerations of decentralized key recovery 
+    mechanisms.
+  </p>
+  <p>
+    This specification introduces <strong>STRIDE-DID</strong>—an adaptation of the classical STRIDE 
+    taxonomy purpose-built for decentralized architectures—and proposes an eighth threat class, 
+    <strong>K (Key Lifecycle Failure)</strong>, which has no equivalent in any existing threat modeling 
+    framework and represents the primary novel contribution of this specification. The <strong>K-Class</strong> 
+    was developed specifically to formalize the security and privacy risks inherent in the three recovery 
+    types defined in DID-KR: Type A (Social Recovery), Type B (Time-Locked Inheritance), and Type C 
+    (MPC-Mediated Recovery).
+  </p>
+  <p>
+    The specification provides:
+  </p>
+  <ul>
+    <li>A formal taxonomy of 7 threat classes (STRIDE-DID + K-Class).</li>
+    <li>A structured attack catalog of over 50 named attacks with unique identifiers (<code>DID-TM-ATK-NNN</code>), attack trees, CVSS-DID scores, and peer-reviewed literature citations.</li>
+    <li>Cryptographic threat analysis covering Verifiable Secret Sharing (VSS), Zero-Knowledge Proofs (ZKP), Verifiable Delay Functions (VDF), and threshold signature schemes (fROST).</li>
+    <li><strong>Normative security and privacy requirements (MUST/SHOULD/MAY) with threat-to-control traceability—directly mapping to and extending the security and privacy sections of DID-KR.</strong></li>
+    <li>Compliance alignment with NIST SP 800-63, ISO 27001, eIDAS 2.0, and SOC 2.</li>
+    <li>A machine-readable <code>JSON-LD</code> context for embedding threat metadata in DID Documents.</li>
+  </ul>
+  <p>
+    The intended audiences are protocol implementers, standards bodies (W3C, IETF, ISO), enterprise 
+    security architects, and academic researchers. This specification is submitted as a 
+    <strong>technical resource</strong> for community discussion within the W3C Credentials Community 
+    Group (CCG) and is designed to be integrated into or referenced by ongoing collaborative work on 
+    DID and DID Resolution threat modeling, with particular relevance to the security and privacy 
+    considerations of the DID Key Recovery Extension.
+  </p>
+</section>
 
 <!-- ════ STATUS ════ -->
 <section id="sotd">
