@@ -1,8 +1,4 @@
-Here's a professional and well-written README for the DID-TM repository:
 
----
-
-```markdown
 # DID Threat Model Specification (DID-TM)
 
 [![Status: Editor's Draft](https://img.shields.io/badge/Status-Editor's%20Draft-orange)](https://github.com/sirraya-labs/did-tm)
