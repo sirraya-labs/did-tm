@@ -1,5 +1,5 @@
 
-# DID Threat Model Specification (DID-TM)
+# DID KR Threat Model Specification (DID-TM)
 
 [![Status: Editor's Draft](https://img.shields.io/badge/Status-Editor's%20Draft-orange)](https://github.com/sirraya-labs/did-tm)
 [![Version](https://img.shields.io/badge/Version-1.0.0-blue)](https://github.com/sirraya-labs/did-tm)
