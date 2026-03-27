@@ -1,12 +1,25 @@
-
-# DID KR Threat Model Specification (DID-TM)
+# DID Key Recovery Threat Model Specification (DID-TM)
 
 [![Status: Editor's Draft](https://img.shields.io/badge/Status-Editor's%20Draft-orange)](https://github.com/sirraya-labs/did-tm)
 [![Version](https://img.shields.io/badge/Version-1.0.0-blue)](https://github.com/sirraya-labs/did-tm)
 [![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
 [![Specification](https://img.shields.io/badge/Specification-HTML%20Preview-red)](https://sirraya-labs.github.io/did-tm/)
+[![DID-KR](https://img.shields.io/badge/DID--KR-Companion%20Spec-blueviolet)](https://github.com/sirraya-labs/did-kr)
 
-A comprehensive, normative threat model and security framework for Decentralized Identifiers (DIDs), Verifiable Credentials (VCs), and Self-Sovereign Identity (SSI) systems.
+A comprehensive, normative threat model and security framework purpose-built for **Decentralized Key Recovery (DID-KR)** systems. This specification formalizes the security and privacy foundations for the three recovery mechanisms defined in DID-KR: Social ZKP Recovery, Deterministic Seedling Inheritance, and MPC-Mediated Recovery.
+
+---
+
+## Relationship to DID-KR
+
+**DID-TM is the security companion to [DID-KR](https://github.com/sirraya-labs/did-kr).** 
+
+| DID-KR Component | DID-TM Coverage |
+|------------------|-----------------|
+| **Type A — Social ZKP Recovery** | Guardian collusion (ATK-400), VSS share pollution (ATK-403), Sybil attacks (ATK-500) |
+| **Type B — Deterministic Seedling Inheritance** | VDF difficulty miscalibration (ATK-402), ASIC advantage (ATK-430), proof forgery (ATK-431) |
+| **Type C — MPC-Mediated Recovery** | Epoch share drift (ATK-401), refresh desynchronization (ATK-440), provider censorship (ATK-407) |
+| **Cross-Cutting Recovery** | Recovery loop deadlock (ATK-404), governance attacks (ATK-502) |
 
 ---
 
@@ -70,14 +83,14 @@ A re-specification of the classical STRIDE threat classes for the decentralized 
 
 The primary novel contribution of this specification. K-Class threats arise when cryptographic key management fails in ways that are often irreversible:
 
-| Sub-class | Description |
-|-----------|-------------|
-| **K1** — Key Ceremony Failure | Insecure key generation, unwitnessed ceremonies, improper escrow |
-| **K2** — Share Lifecycle Failure | Distribution, custody, refreshment, or reconstruction failures in threshold schemes |
-| **K3** — Time-Lock Integrity Failure | VDF difficulty miscalibration, ASIC advantage, false proof acceptance |
-| **K4** — Rotation and Revocation Failure | Revoked keys remain accepted; windows of dual validity |
-| **K5** — Post-Quantum Migration Failure | Failure to migrate before cryptographically relevant quantum computers arrive |
-| **K6** — Inheritance and Recovery Chain Failure | Broken succession paths, dead-man's switch failures, inheritance chain breaks |
+| Sub-class | Description | DID-KR Relevance |
+|-----------|-------------|------------------|
+| **K1** — Key Ceremony Failure | Insecure key generation, unwitnessed ceremonies, improper escrow | Guardian setup ceremonies |
+| **K2** — Share Lifecycle Failure | Distribution, custody, refreshment, or reconstruction failures in threshold schemes | VSS share management, MPC epoch refresh |
+| **K3** — Time-Lock Integrity Failure | VDF difficulty miscalibration, ASIC advantage, false proof acceptance | Time-locked inheritance (Type B) |
+| **K4** — Rotation and Revocation Failure | Revoked keys remain accepted; windows of dual validity | Key rotation in recovery paths |
+| **K5** — Post-Quantum Migration Failure | Failure to migrate before cryptographically relevant quantum computers arrive | Long-term recovery security |
+| **K6** — Inheritance and Recovery Chain Failure | Broken succession paths, dead-man's switch failures, inheritance chain breaks | Type B inheritance, Type A guardian succession |
 
 ### CVSS-DID Scoring
 
@@ -248,6 +261,11 @@ This specification is licensed under the **MIT License**. See the [LICENSE](LICE
 
 ---
 
+## Related Work
+
+- **[DID Key Recovery Extension (DID-KR)](https://github.com/sirraya-labs/did-kr)** — The companion specification defining concrete recovery mechanisms that this threat model secures.
+
+---
+
 **Sirraya Labs** · Editor's Draft v1.0.0 · March 2026
-
-
+```
